@@ -271,7 +271,7 @@ public class BkCcHostsBuilder extends Builder implements SimpleBuildStep {
         @POST
         public FormValidation doCheckBkModules(@QueryParameter String bkModules) throws IOException, ServletException {
             if (bkModules.isEmpty()) {
-                return FormValidation.error("Please set a cmdb module id list, split with dot");
+                return FormValidation.error("Please set a cmdb module id list, split with ','");
             }
             String[] ss = bkModules.split(",");
             for (String s : ss) {
