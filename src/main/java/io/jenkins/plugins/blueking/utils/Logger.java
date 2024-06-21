@@ -38,7 +38,7 @@ public class Logger {
      * @param args Arguments for the message template.
      */
     public void error(String msg, Object... args) {
-        listener.error("[AliyunOSS] error: %s", String.format(msg, args));
+        listener.error("[BlueKing] error: %s", String.format(msg, args));
     }
 
     /**
@@ -62,7 +62,7 @@ public class Logger {
      * @param args Arguments for the message template.
      */
     public void log(String msg, Object... args) {
-        debug("[AliyunOSS] " + msg, args);
+        debug("[BlueKing] " + msg, args);
     }
 
     public PrintStream getStream() {
