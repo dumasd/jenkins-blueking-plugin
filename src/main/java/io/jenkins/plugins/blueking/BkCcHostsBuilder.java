@@ -1,6 +1,5 @@
 package io.jenkins.plugins.blueking;
 
-import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
@@ -32,12 +31,16 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import javax.servlet.ServletException;
 import jenkins.tasks.SimpleBuildStep;
+import lombok.Getter;
+import lombok.Setter;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.verb.POST;
 
+@Setter
+@Getter
 public class BkCcHostsBuilder extends Builder implements SimpleBuildStep {
 
     /**
@@ -88,34 +91,6 @@ public class BkCcHostsBuilder extends Builder implements SimpleBuildStep {
         this.bkModules = bkModules;
     }
 
-    public String getBaseUrl() {
-        return baseUrl;
-    }
-
-    public String getBkAppCode() {
-        return bkAppCode;
-    }
-
-    public String getBkAppSecret() {
-        return bkAppSecret;
-    }
-
-    public String getBkUsername() {
-        return bkUsername;
-    }
-
-    public String getBkBiz() {
-        return bkBiz;
-    }
-
-    public String getBkSet() {
-        return bkSet;
-    }
-
-    public String getBkModules() {
-        return bkModules;
-    }
-
     @DataBoundSetter
     public void setOuterIpVariable(String outerIpVariable) {
         this.outerIpVariable = outerIpVariable;
@@ -126,39 +101,39 @@ public class BkCcHostsBuilder extends Builder implements SimpleBuildStep {
         this.innerIpVariable = innerIpVariable;
     }
 
-    public String getOuterIpVariable() {
-        return outerIpVariable;
-    }
-
-    public String getInnerIpVariable() {
-        return innerIpVariable;
-    }
-
     @Override
     public void perform(Run<?, ?> run, FilePath workspace, EnvVars env, Launcher launcher, TaskListener listener)
             throws InterruptedException, IOException {
-        Logger logger = new Logger(listener.getLogger());
-        logger.log("Start........");
-        BluekingCCClient client = new BluekingCCClient(logger, baseUrl, bkAppCode, bkAppSecret, bkUsername);
-        BkBizSetModule biz = findBiz(client);
+        Logger logger = new Logger(listener);
+        String baseUrlEx = env.expand(baseUrl);
+        String bkAppCodeEx = env.expand(bkAppCode);
+        String bkAppSecretEx = env.expand(bkAppSecret);
+        String bkUsernameEx = env.expand(bkUsername);
+        String bkBizEx = env.expand(bkBiz);
+        String bkSetEx = env.expand(bkSet);
+        String bkModulesEx = env.expand(bkModules);
+        logger.log(
+                "Start fetch host. baseUrl:%s, biz:%s, set:%s, modules:%s", baseUrlEx, bkBizEx, bkSetEx, bkModulesEx);
+        BluekingCCClient client = new BluekingCCClient(logger, baseUrlEx, bkAppCodeEx, bkAppSecretEx, bkUsernameEx);
+        BkBizSetModule biz = findBiz(client, bkBizEx);
         if (Objects.isNull(biz)) {
-            logger.log("Not found business, please check your parameter");
+            logger.log("CMDB Business not found, please check your parameter");
             run.setResult(Result.FAILURE);
             return;
         }
 
         SearchSetRequest searchSetRequest = new SearchSetRequest();
         searchSetRequest.setBkBizId(biz.getBkBizId());
-        searchSetRequest.addIdOrNameCondition(bkSet);
+        searchSetRequest.addIdOrNameCondition(bkSetEx);
         PageData<BkBizSetModule> searchSetData = client.searchSet(searchSetRequest);
         if (searchSetData.getCount() <= 0) {
-            logger.log("Not found set, please check your parameter");
+            logger.log("CMDB set not found, please check your parameter");
             run.setResult(Result.FAILURE);
             return;
         }
 
         if (searchSetData.getCount() > 1) {
-            logger.log("Found set more than 1, please check your blueking");
+            logger.log("Found CMDB set more than 1, please check your blueking");
             run.setResult(Result.FAILURE);
             return;
         }
@@ -166,7 +141,7 @@ public class BkCcHostsBuilder extends Builder implements SimpleBuildStep {
 
         // biz module ids
         List<Integer> moduleIds =
-                Arrays.stream(bkModules.split(",")).map(Integer::parseInt).collect(Collectors.toList());
+                Arrays.stream(bkModulesEx.split(",")).map(Integer::parseInt).collect(Collectors.toList());
 
         // 搜索host,拼接IP
         ListBizHostsRequest listBizHostsRequest = new ListBizHostsRequest();
@@ -199,7 +174,7 @@ public class BkCcHostsBuilder extends Builder implements SimpleBuildStep {
         run.addAction(new EnvInjectAction(envVars));
     }
 
-    private BkBizSetModule findBiz(BluekingCCClient client) {
+    private BkBizSetModule findBiz(BluekingCCClient client, String bizIdOrName) {
         SearchBusinessRequest searchBusinessRequest = new SearchBusinessRequest();
         Page page = new Page();
         page.setLimit(200);
@@ -210,7 +185,8 @@ public class BkCcHostsBuilder extends Builder implements SimpleBuildStep {
         }
         BkBizSetModule biz = null;
         for (BkBizSetModule bsm : searchBusinessData.getInfo()) {
-            if (Objects.equals(bsm.getBkBizId().toString(), bkBiz) || Objects.equals(bsm.getBkBizName(), bkBiz)) {
+            if (Objects.equals(bsm.getBkBizId().toString(), bizIdOrName)
+                    || Objects.equals(bsm.getBkBizName(), bizIdOrName)) {
                 biz = bsm;
                 break;
             }
@@ -297,7 +273,7 @@ public class BkCcHostsBuilder extends Builder implements SimpleBuildStep {
 
     public static class EnvInjectAction implements EnvironmentContributingAction {
 
-        private EnvVars envVars;
+        private final EnvVars envVars;
 
         public EnvInjectAction(EnvVars envVars) {
             this.envVars = envVars;
@@ -319,7 +295,7 @@ public class BkCcHostsBuilder extends Builder implements SimpleBuildStep {
         }
 
         @Override
-        public void buildEnvironment(@NonNull Run<?, ?> run, @NonNull EnvVars env) {
+        public void buildEnvironment(Run<?, ?> run, EnvVars env) {
             env.overrideAll(envVars);
         }
     }

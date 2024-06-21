@@ -1,10 +1,18 @@
 package io.jenkins.plugins.blueking.model.dto;
 
+import java.io.Serializable;
+import lombok.Getter;
+import lombok.Setter;
+
 /**
  * @author Bruce.Wu
  * @date 2024-06-13
  */
-public class Page {
+@Setter
+@Getter
+public class Page implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     private Integer start;
     private Integer limit;
@@ -15,22 +23,6 @@ public class Page {
 
     public Page(int start, int limit) {
         this.start = start;
-        this.limit = limit;
-    }
-
-    public int getStart() {
-        return start;
-    }
-
-    public void setStart(int start) {
-        this.start = start;
-    }
-
-    public int getLimit() {
-        return limit;
-    }
-
-    public void setLimit(int limit) {
         this.limit = limit;
     }
 }

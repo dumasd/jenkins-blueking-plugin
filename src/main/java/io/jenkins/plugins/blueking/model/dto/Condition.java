@@ -1,9 +1,16 @@
 package io.jenkins.plugins.blueking.model.dto;
 
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
+
 /**
  * @author Bruce.Wu
  * @date 2024-06-13
  */
+@Setter
+@Getter
+@ToString
 public class Condition {
 
     private String field;
@@ -19,30 +26,6 @@ public class Condition {
     }
 
     public Condition() {}
-
-    public String getField() {
-        return field;
-    }
-
-    public void setField(String field) {
-        this.field = field;
-    }
-
-    public String getOperator() {
-        return operator;
-    }
-
-    public void setOperator(String operator) {
-        this.operator = operator;
-    }
-
-    public Object getValue() {
-        return value;
-    }
-
-    public void setValue(Object value) {
-        this.value = value;
-    }
 
     public static Condition eq(String field, Object value) {
         return new Condition(field, "$eq", value);

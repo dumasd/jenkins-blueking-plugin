@@ -38,7 +38,7 @@ public class BluekingCCClient {
 
     public PageData<BkBizSetModule> searchBusiness(SearchBusinessRequest request) {
         handleCredentials(request);
-        String url = baseUrl + "/api/c/compapi/v2/cc/search_business/";
+        String url = baseUrl + "/api/c/compapi/v2/cc/search_business";
         logger.log("Start request. url=" + url);
         String searchBizRespJson = HttpClientUtil.post(url, request.toJsonString());
         BaseResponse<PageData<BkBizSetModule>> response = JSON.parseObject(searchBizRespJson, new TypeReference<>() {});
@@ -47,7 +47,7 @@ public class BluekingCCClient {
 
     public PageData<BkBizSetModule> searchSet(SearchSetRequest request) {
         handleCredentials(request);
-        String url = baseUrl + "/api/c/compapi/v2/cc/search_set/";
+        String url = baseUrl + "/api/c/compapi/v2/cc/search_set";
         logger.log("Start request. url=" + url);
         String respJson = HttpClientUtil.post(url, request.toJsonString());
         BaseResponse<PageData<BkBizSetModule>> response = JSON.parseObject(respJson, new TypeReference<>() {});
@@ -56,7 +56,7 @@ public class BluekingCCClient {
 
     public PageData<BkBizSetModule> searchModule(SearchModuleRequest request) {
         handleCredentials(request);
-        String url = baseUrl + "/api/c/compapi/v2/cc/search_module/";
+        String url = baseUrl + "/api/c/compapi/v2/cc/search_module";
         logger.log("Start request. url=" + url);
         String respJson = HttpClientUtil.post(url, request.toJsonString());
         BaseResponse<PageData<BkBizSetModule>> response = JSON.parseObject(respJson, new TypeReference<>() {});
@@ -65,7 +65,7 @@ public class BluekingCCClient {
 
     public PageData<BkHost> listBizHosts(ListBizHostsRequest request) {
         handleCredentials(request);
-        String url = baseUrl + "/api/c/compapi/v2/cc/list_biz_hosts/";
+        String url = baseUrl + "/api/c/compapi/v2/cc/list_biz_hosts";
         logger.log("Start request. url=" + url);
         String respJson = HttpClientUtil.post(url, request.toJsonString());
         BaseResponse<PageData<BkHost>> response = JSON.parseObject(respJson, new TypeReference<>() {});

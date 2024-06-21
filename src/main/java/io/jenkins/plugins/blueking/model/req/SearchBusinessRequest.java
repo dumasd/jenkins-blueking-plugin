@@ -8,7 +8,11 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter
+@Setter
 public class SearchBusinessRequest extends BaseRequest {
 
     private List<String> fields;
@@ -24,35 +28,7 @@ public class SearchBusinessRequest extends BaseRequest {
         this.fields = new ArrayList<>(Arrays.asList("bk_biz_id", "bk_biz_name"));
     }
 
-    public List<String> getFields() {
-        return fields;
-    }
-
-    public void setFields(List<String> fields) {
-        this.fields = fields;
-    }
-
-    public BizPropertyFilter getBizPropertyFilter() {
-        return bizPropertyFilter;
-    }
-
     public void setBizPropertyFilter(BizPropertyFilter bizPropertyFilter) {
         this.bizPropertyFilter = bizPropertyFilter;
-    }
-
-    public Page getPage() {
-        return page;
-    }
-
-    public void setPage(Page page) {
-        this.page = page;
-    }
-
-    public Map<String, Object> getCondition() {
-        return condition;
-    }
-
-    public void setCondition(Map<String, Object> condition) {
-        this.condition = condition;
     }
 }

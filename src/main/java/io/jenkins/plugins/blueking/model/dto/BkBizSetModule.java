@@ -1,7 +1,13 @@
 package io.jenkins.plugins.blueking.model.dto;
 
 import com.alibaba.fastjson2.annotation.JSONField;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
+@Setter
+@Getter
+@ToString
 public class BkBizSetModule {
 
     @JSONField(name = "bk_biz_id")
@@ -24,60 +30,4 @@ public class BkBizSetModule {
 
     @JSONField(name = "default")
     private Integer defaultFlg;
-
-    public Integer getBkBizId() {
-        return bkBizId;
-    }
-
-    public void setBkBizId(Integer bkBizId) {
-        this.bkBizId = bkBizId;
-    }
-
-    public String getBkBizName() {
-        return bkBizName;
-    }
-
-    public void setBkBizName(String bkBizName) {
-        this.bkBizName = bkBizName;
-    }
-
-    public Integer getBkSetId() {
-        return bkSetId;
-    }
-
-    public void setBkSetId(Integer bkSetId) {
-        this.bkSetId = bkSetId;
-    }
-
-    public String getBkSetName() {
-        return bkSetName;
-    }
-
-    public void setBkSetName(String bkSetName) {
-        this.bkSetName = bkSetName;
-    }
-
-    public Integer getBkModuleId() {
-        return bkModuleId;
-    }
-
-    public void setBkModuleId(Integer bkModuleId) {
-        this.bkModuleId = bkModuleId;
-    }
-
-    public String getBkModuleName() {
-        return bkModuleName;
-    }
-
-    public void setBkModuleName(String bkModuleName) {
-        this.bkModuleName = bkModuleName;
-    }
-
-    public Integer getDefaultFlg() {
-        return defaultFlg;
-    }
-
-    public void setDefaultFlg(Integer defaultFlg) {
-        this.defaultFlg = defaultFlg;
-    }
 }

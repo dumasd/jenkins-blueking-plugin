@@ -2,11 +2,15 @@ package io.jenkins.plugins.blueking.model.req;
 
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.annotation.JSONField;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * @author Bruce.Wu
  * @date 2024-06-13
  */
+@Setter
+@Getter
 public class BaseRequest {
 
     @JSONField(name = "bk_app_code")
@@ -20,38 +24,6 @@ public class BaseRequest {
 
     @JSONField(name = "bk_username")
     private String bkUsername;
-
-    public String getBkAppCode() {
-        return bkAppCode;
-    }
-
-    public void setBkAppCode(String bkAppCode) {
-        this.bkAppCode = bkAppCode;
-    }
-
-    public String getBkAppSecret() {
-        return bkAppSecret;
-    }
-
-    public void setBkAppSecret(String bkAppSecret) {
-        this.bkAppSecret = bkAppSecret;
-    }
-
-    public String getBkToken() {
-        return bkToken;
-    }
-
-    public void setBkToken(String bkToken) {
-        this.bkToken = bkToken;
-    }
-
-    public String getBkUsername() {
-        return bkUsername;
-    }
-
-    public void setBkUsername(String bkUsername) {
-        this.bkUsername = bkUsername;
-    }
 
     @Override
     public String toString() {
