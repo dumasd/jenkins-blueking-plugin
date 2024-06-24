@@ -1,26 +1,71 @@
-# jenkins-blueking-plugin
+# Jenkins BlueKing Plugin
 
-## Introduction
+## 介绍
 
-TODO Describe what your plugin does here
+此插件为Jenkins提供与[腾讯蓝鲸](https://github.com/TencentBlueKing)集成的能力。
 
-## Getting started
+### 特性
 
-TODO Tell users how to configure your plugin here, include screenshots, pipeline examples and 
-configuration-as-code examples.
+- bkCC: 从蓝鲸CMDB的业务拓扑获取业务主机信息
+
+## 使用
+
+### bkCC
+
+| 参数            | 参数名称           | 参数解释                                              |
+| --------------- | ------------------ | ----------------------------------------------------- |
+| baseUrl         | Base URL           | 蓝鲸OPEN API基准地址                                  |
+| bkAppCode       | App Code           | 蓝鲸开发者中心应用ID                                  |
+| bkAppSecret     | App Secret         | 蓝鲸开发者中心应用Secret                              |
+| bkBiz           | CMDB Business      | 蓝鲸CMDB业务拓扑-业务                                 |
+| bkSet           | CMDB Set           | 蓝鲸CMDB业务拓扑-集群                                 |
+| bkModules       | CMDB Module IDS    | 蓝鲸CMDB业务拓扑-模块ID列表，多个用逗号隔开           |
+| outerIpVariable | Outer IPS Variable | 主机外网IP列表存储的环境变量名称。默认为 BK_OUTER_IPS |
+| innerIpVariable | Inner IPS variable | 主机内网IP列表存储的环境变量名称。默认为 BK_INNER_IPS |
+
+注意：应用必须添加到**应用免登录态验证白名**单中，否则此插件无法调用蓝鲸API。
+
+#### Freestyle 作业
+
+在Add build step（增加构建步骤）选择 Get Host from blueking。
+
+![image-20240624152302990](images/image-20240624152302990.png)
+
+填写插件参数。
+
+![image-20240624153521233](images/image-20240624153521233.png)
+
+#### Pipeline 作业
+
+```groovy
+pipeline {
+    agent any
+    
+    environment {
+        BK_CRED = credentials('blueking-cred')
+        BK_USER = 'admin'
+        BK_BIZ = '蓝鲸'
+      	BK_SET = 'PaaS平台'
+        BK_MODULES = '100,200'
+    }
+    
+    stages {
+        stage('Hello') {
+            steps {
+                bkCC baseUrl: 'http://paas.bktencent.com', bkUsername: '${BK_USER}', bkAppCode: '${BK_CRED_USR}', bkAppSecret: '${BK_CRED_PSW}', bkBiz: '${BK_BIZ}', bkSet: '${BK_SET}', bkModules: '${BK_MODULES}'
+                sh 'echo "${BK_INNER_IPS}"'
+                sh 'echo "${BK_OUTER_IPS}"'
+            }
+        }
+    }
+}
+```
+
+
 
 ## Issues
 
-TODO Decide where you're going to host your issues, the default is Jenkins JIRA, but you can also enable GitHub issues,
-If you use GitHub issues there's no need for this section; else add the following line:
-
-Report issues and enhancements in the [Jenkins issue tracker](https://issues.jenkins.io/).
-
-## Contributing
-
-TODO review the default [CONTRIBUTING](https://github.com/jenkinsci/.github/blob/master/CONTRIBUTING.md) file and make sure it is appropriate for your plugin, if not then add your own one adapted from the base file
-
-Refer to our [contribution guidelines](https://github.com/jenkinsci/.github/blob/master/CONTRIBUTING.md)
+有任何问题可以在 [Jenkins BlueKing Plugin issue tracker](https://github.com/dumasd/jenkins-blueking-plugin/issues) 提出.
 
 ## LICENSE
 
