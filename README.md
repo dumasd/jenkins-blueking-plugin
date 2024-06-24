@@ -12,16 +12,16 @@
 
 ### bkCC
 
-| 参数            | 参数名称           | 参数解释                                              |
-| --------------- | ------------------ | ----------------------------------------------------- |
-| baseUrl         | Base URL           | 蓝鲸OPEN API基准地址                                  |
-| bkAppCode       | App Code           | 蓝鲸开发者中心应用ID                                  |
-| bkAppSecret     | App Secret         | 蓝鲸开发者中心应用Secret                              |
-| bkBiz           | CMDB Business      | 蓝鲸CMDB业务拓扑-业务                                 |
-| bkSet           | CMDB Set           | 蓝鲸CMDB业务拓扑-集群                                 |
-| bkModules       | CMDB Module IDS    | 蓝鲸CMDB业务拓扑-模块ID列表，多个用逗号隔开           |
-| outerIpVariable | Outer IPS Variable | 主机外网IP列表存储的环境变量名称。默认为 BK_OUTER_IPS |
-| innerIpVariable | Inner IPS variable | 主机内网IP列表存储的环境变量名称。默认为 BK_INNER_IPS |
+| 参数            | 参数名称           | 参数解释                                                     |
+| --------------- | ------------------ | ------------------------------------------------------------ |
+| baseUrl         | Base URL           | 蓝鲸OPEN API基准地址                                         |
+| bkAppCode       | App Code           | 蓝鲸开发者中心应用ID                                         |
+| bkAppSecret     | App Secret         | 蓝鲸开发者中心应用Secret                                     |
+| bkBiz           | CMDB Business      | 蓝鲸CMDB业务拓扑-业务                                        |
+| bkSet           | CMDB Set           | 蓝鲸CMDB业务拓扑-集群                                        |
+| bkModules       | CMDB Module IDS    | 蓝鲸CMDB业务拓扑-模块ID列表（多个用逗号隔开）。低版本蓝鲸OpenApi有bug，只支持模块ID，暂时无法支持模块名称 |
+| outerIpVariable | Outer IPS Variable | 主机外网IP列表存储的环境变量名称。默认为 BK_OUTER_IPS        |
+| innerIpVariable | Inner IPS variable | 主机内网IP列表存储的环境变量名称。默认为 BK_INNER_IPS        |
 
 注意：应用必须添加到**应用免登录态验证白名**单中，否则此插件无法调用蓝鲸API。
 
