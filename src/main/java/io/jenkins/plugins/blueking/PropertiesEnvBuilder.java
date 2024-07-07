@@ -5,23 +5,28 @@ import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.AbstractProject;
+import hudson.model.Descriptor;
 import hudson.model.EnvironmentContributingAction;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.FormValidation;
+import io.jenkins.plugins.blueking.config.PropertiesEnvConfig;
 import io.jenkins.plugins.blueking.utils.Logger;
 import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
 import javax.servlet.ServletException;
+import jenkins.model.Jenkins;
 import jenkins.tasks.SimpleBuildStep;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.jenkinsci.lib.configprovider.model.Config;
@@ -39,7 +44,7 @@ import org.kohsuke.stapler.verb.POST;
  */
 @Getter
 @Setter
-public class PropertiesHostsBuilder extends Builder implements SimpleBuildStep {
+public class PropertiesEnvBuilder extends Builder implements SimpleBuildStep {
     /**
      * 文件ID
      */
@@ -48,18 +53,12 @@ public class PropertiesHostsBuilder extends Builder implements SimpleBuildStep {
      * 文件路径。文件ID优先
      */
     private String filePath;
-    /**
-     * key
-     */
-    private String key;
-    /**
-     * 读取到的IP变量名称
-     */
-    private String ipVariable = "BK_IPS";
+
+    private List<PropertiesEnvConfig> configs;
 
     @DataBoundConstructor
-    public PropertiesHostsBuilder(String key) {
-        this.key = key;
+    public PropertiesEnvBuilder(List<PropertiesEnvConfig> configs) {
+        this.configs = configs;
     }
 
     @DataBoundSetter
@@ -72,9 +71,8 @@ public class PropertiesHostsBuilder extends Builder implements SimpleBuildStep {
         this.filePath = filePath;
     }
 
-    @DataBoundSetter
-    public void setIpVariable(String ipVariable) {
-        this.ipVariable = ipVariable;
+    public Descriptor<PropertiesEnvConfig> getConfigDescriptor() {
+        return Jenkins.get().getDescriptorByType(PropertiesEnvConfig.PropertiesEnvConfigDescriptor.class);
     }
 
     public void perform(Run<?, ?> run, FilePath workspace, EnvVars env, Launcher launcher, TaskListener listener)
@@ -100,22 +98,32 @@ public class PropertiesHostsBuilder extends Builder implements SimpleBuildStep {
         } else {
             throw new RuntimeException("FileId and FilePath all blank!!");
         }
-        String keyEx = env.expand(key);
-        String value = properties.getProperty(keyEx);
-        if (StringUtils.isBlank(value)) {
-            throw new RuntimeException("ip value is blank. key=" + keyEx);
-        }
-        logger.log("Get ip. key=%s, ips=%s", keyEx, value);
+
         EnvVars envVars = new EnvVars();
+        for (PropertiesEnvConfig config : configs) {
+            String keyEx = env.expand(config.getKey());
+            String envEx = env.expand(config.getEnv());
+            if (StringUtils.isBlank(keyEx)) {
+                throw new RuntimeException("key is blank.");
+            }
+            if (StringUtils.isBlank(envEx)) {
+                throw new RuntimeException("env is blank.");
+            }
+            String value = properties.getProperty(keyEx);
+            if (StringUtils.isBlank(value)) {
+                throw new RuntimeException("ip value is blank. key=" + keyEx);
+            }
+            logger.log("Get environment. key=%s, env=%s, value=%s", keyEx, envEx, value);
+            envVars.put(envEx, value);
+        }
         envVars.overrideAll(env);
         envVars.overrideAll(EnvVars.masterEnvVars);
-        envVars.put(ipVariable, value);
         run.addAction(new EnvInjectAction(envVars));
     }
 
-    @Symbol("propertiesCC")
+    @Symbol("propertiesEnv")
     @Extension
-    public static final class PropertiesHostsDescriptor extends BuildStepDescriptor<Builder> {
+    public static final class PropertiesEnvDescriptor extends BuildStepDescriptor<Builder> {
 
         @POST
         public FormValidation doCheckKey(@QueryParameter("key") String key) throws IOException, ServletException {
@@ -126,20 +134,10 @@ public class PropertiesHostsBuilder extends Builder implements SimpleBuildStep {
         }
 
         @POST
-        public FormValidation doCheckFile(
-                @QueryParameter("fileId") String fileId, @QueryParameter("filePath") String filePath)
+        public FormValidation doCheckConfigs(@QueryParameter("configs") List<PropertiesEnvConfig> configs)
                 throws IOException, ServletException {
-            if (StringUtils.isBlank(fileId) && StringUtils.isBlank(filePath)) {
-                return FormValidation.error("Please set fileId or filePath");
-            }
-            return FormValidation.ok();
-        }
-
-        @POST
-        public FormValidation doCheckIpVariable(@QueryParameter("ipVariable") String ipVariable)
-                throws IOException, ServletException {
-            if (StringUtils.isBlank(ipVariable)) {
-                return FormValidation.error("Please set ipVariable");
+            if (CollectionUtils.isEmpty(configs)) {
+                return FormValidation.error("Please add key-env config");
             }
             return FormValidation.ok();
         }
@@ -151,7 +149,7 @@ public class PropertiesHostsBuilder extends Builder implements SimpleBuildStep {
 
         @Override
         public String getDisplayName() {
-            return "Get Host from properties file";
+            return "Get environments from properties file";
         }
     }
 
