@@ -113,8 +113,9 @@ public class PropertiesEnvBuilder extends Builder implements SimpleBuildStep {
             if (StringUtils.isBlank(value)) {
                 throw new RuntimeException("ip value is blank. key=" + keyEx);
             }
-            logger.log("Get environment. key=%s, env=%s, value=%s", keyEx, envEx, value);
-            envVars.put(envEx, value);
+            String valueEx = env.expand(value);
+            logger.log("Get environment. key=%s, env=%s, value=%s", keyEx, envEx, valueEx);
+            envVars.put(envEx, valueEx);
         }
         envVars.overrideAll(env);
         envVars.overrideAll(EnvVars.masterEnvVars);
