@@ -100,6 +100,8 @@ public class PropertiesEnvBuilder extends Builder implements SimpleBuildStep {
         }
 
         EnvVars envVars = new EnvVars();
+        envVars.overrideAll(env);
+        envVars.overrideAll(EnvVars.masterEnvVars);
         for (PropertiesEnvConfig config : configs) {
             String keyEx = env.expand(config.getKey());
             String envEx = env.expand(config.getEnv());
@@ -110,15 +112,14 @@ public class PropertiesEnvBuilder extends Builder implements SimpleBuildStep {
                 throw new RuntimeException("env is blank.");
             }
             String value = properties.getProperty(keyEx);
-            if (StringUtils.isBlank(value)) {
-                throw new RuntimeException("ip value is blank. key=" + keyEx);
-            }
             String valueEx = env.expand(value);
-            logger.log("Get environment. key=%s, env=%s, value=%s", keyEx, envEx, valueEx);
-            envVars.put(envEx, valueEx);
+            if (StringUtils.isNotBlank(valueEx)) {
+                logger.log("Get environment. key=%s, env=%s, value=%s", keyEx, envEx, valueEx);
+                envVars.put(envEx, valueEx);
+            } else {
+                logger.log("Get environment. key=%s, env=%s, value is blank!", keyEx, envEx);
+            }
         }
-        envVars.overrideAll(env);
-        envVars.overrideAll(EnvVars.masterEnvVars);
         run.addAction(new EnvInjectAction(envVars));
     }
 
