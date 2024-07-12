@@ -113,11 +113,16 @@ public class PropertiesEnvBuilder extends Builder implements SimpleBuildStep {
             }
             String value = properties.getProperty(keyEx);
             String valueEx = env.expand(value);
-            if (StringUtils.isNotBlank(valueEx)) {
-                logger.log("Get environment. key=%s, env=%s, value=%s", keyEx, envEx, valueEx);
+            if (StringUtils.isNotEmpty(valueEx)) {
+                logger.log("Get environment from properties file. key=%s, env=%s, value=%s", keyEx, envEx, valueEx);
                 envVars.put(envEx, valueEx);
+            } else if (StringUtils.isNotEmpty(config.getDefaultValue())) {
+                envVars.put(envEx, config.getDefaultValue());
+                logger.log(
+                        "Get environment from default value. key=%s, env=%s, value=%s",
+                        keyEx, envEx, config.getDefaultValue());
             } else {
-                logger.log("Get environment. key=%s, env=%s, value is blank!", keyEx, envEx);
+                logger.log("Get environment. key=%s, env=%s, value is empty!", keyEx, envEx);
             }
         }
         run.addAction(new EnvInjectAction(envVars));

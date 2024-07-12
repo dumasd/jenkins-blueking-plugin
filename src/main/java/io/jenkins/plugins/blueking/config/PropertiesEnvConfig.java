@@ -4,9 +4,7 @@ import hudson.Extension;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.util.FormValidation;
-
 import java.io.Serializable;
-
 import jenkins.model.Jenkins;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -34,7 +32,6 @@ public class PropertiesEnvConfig implements Serializable, Describable<Properties
      * properties value
      */
     private String defaultValue;
-
 
     @DataBoundConstructor
     public PropertiesEnvConfig(String key, String env) {
