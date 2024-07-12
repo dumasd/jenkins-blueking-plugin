@@ -7,4 +7,7 @@
     <f:entry title="${%env}" field="env">
         <f:textbox/>
     </f:entry>
+    <f:entry title="${%defaultValue}" field="defaultValue">
+        <f:textbox/>
+    </f:entry>
 </j:jelly>
