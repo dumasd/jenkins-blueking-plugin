@@ -13,9 +13,15 @@ import java.io.PrintStream;
  */
 public class Logger {
 
+    private final String prefix;
     private final TaskListener listener;
 
     public Logger(TaskListener listener) {
+        this("BlueKing", listener);
+    }
+
+    public Logger(String prefix, TaskListener listener) {
+        this.prefix = prefix;
         this.listener = listener;
     }
 
@@ -38,7 +44,7 @@ public class Logger {
      * @param args Arguments for the message template.
      */
     public void error(String msg, Object... args) {
-        listener.error("[BlueKing] error: %s", String.format(msg, args));
+        listener.error("[%s] error: %s", prefix, String.format(msg, args));
     }
 
     /**
@@ -62,7 +68,7 @@ public class Logger {
      * @param args Arguments for the message template.
      */
     public void log(String msg, Object... args) {
-        debug("[BlueKing] " + msg, args);
+        debug("[" + prefix + "] " + msg, args);
     }
 
     public PrintStream getStream() {

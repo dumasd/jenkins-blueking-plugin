@@ -77,7 +77,7 @@ public class PropertiesEnvBuilder extends Builder implements SimpleBuildStep {
 
     public void perform(Run<?, ?> run, FilePath workspace, EnvVars env, Launcher launcher, TaskListener listener)
             throws InterruptedException, IOException {
-        Logger logger = new Logger(listener);
+        Logger logger = new Logger("PropertiesEnvBuilder", listener);
 
         Properties properties = new Properties();
         if (StringUtils.isNotBlank(fileId)) {
