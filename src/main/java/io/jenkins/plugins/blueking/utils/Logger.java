@@ -26,17 +26,6 @@ public class Logger {
     }
 
     /**
-     * Formats a message with given arguments. Prepends a standard error prefix to the message.
-     *
-     * @param msg  The message template containing placeholders.
-     * @param args Arguments that will be replaced in the message template.
-     * @return A formatted string with the specified message and arguments, including a standard prefix.
-     */
-    public static String format(String msg, Object... args) {
-        return String.format("[AliyunOSS] error: %s", String.format(msg, args));
-    }
-
-    /**
      * Logs an error message through the specified task listener. The message is formatted and
      * prefixed to indicate it is an error related to Lark operations.
      *
