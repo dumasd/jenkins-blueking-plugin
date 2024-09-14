@@ -1,0 +1,33 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
+         xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+    <f:entry title="${%baseUrl}" field="baseUrl">
+        <f:textbox/>
+    </f:entry>
+    <f:entry title="${%bkAppCode}" field="appCode">
+        <f:textbox/>
+    </f:entry>
+    <f:entry title="${%bkAppSecret}" field="appSecret">
+        <f:password/>
+    </f:entry>
+    <f:entry title="${%bkUsername}" field="username">
+        <f:textbox/>
+    </f:entry>
+    <f:entry title="${%bkBiz}" field="biz">
+        <f:textbox/>
+    </f:entry>
+    <f:entry title="${%bkSet}" field="set">
+        <f:textbox/>
+    </f:entry>
+    <f:entry title="${%bkModules}" field="modules">
+        <f:textbox/>
+    </f:entry>
+    <f:advanced>
+        <f:entry title="${%outerIpVariable}" field="outerIpVariable">
+            <f:textbox default="${instance != null ? instance.envVarName : 'BK_OUTER_IPS'}"/>
+        </f:entry>
+        <f:entry title="${%innerIpVariable}" field="innerIpVariable">
+            <f:textbox default="${instance != null ? instance.envVarName : 'BK_INNER_IPS'}"/>
+        </f:entry>
+    </f:advanced>
+</j:jelly>

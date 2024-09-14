@@ -45,6 +45,10 @@ public class BaseResponse<T> {
         this.data = data;
     }
 
+    public String getStrCode() {
+        return String.valueOf(code);
+    }
+
     @Override
     public String toString() {
         return JSON.toJSONString(this);

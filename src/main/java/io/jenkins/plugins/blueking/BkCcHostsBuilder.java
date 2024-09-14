@@ -1,11 +1,11 @@
 package io.jenkins.plugins.blueking;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.AbstractProject;
-import hudson.model.EnvironmentContributingAction;
 import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.TaskListener;
@@ -75,13 +75,13 @@ public class BkCcHostsBuilder extends Builder implements SimpleBuildStep {
 
     @DataBoundConstructor
     public BkCcHostsBuilder(
-            String baseUrl,
-            String bkAppCode,
-            String bkAppSecret,
-            String bkUsername,
-            String bkBiz,
-            String bkSet,
-            String bkModules) {
+            @NonNull String baseUrl,
+            @NonNull String bkAppCode,
+            @NonNull String bkAppSecret,
+            @NonNull String bkUsername,
+            @NonNull String bkBiz,
+            @NonNull String bkSet,
+            @NonNull String bkModules) {
         this.baseUrl = baseUrl;
         this.bkAppCode = bkAppCode;
         this.bkAppSecret = bkAppSecret;
@@ -114,7 +114,7 @@ public class BkCcHostsBuilder extends Builder implements SimpleBuildStep {
         String bkModulesEx = env.expand(bkModules);
         logger.log(
                 "Start fetch host. baseUrl:%s, biz:%s, set:%s, modules:%s", baseUrlEx, bkBizEx, bkSetEx, bkModulesEx);
-        BluekingCCClient client = new BluekingCCClient(logger, baseUrlEx, bkAppCodeEx, bkAppSecretEx, bkUsernameEx);
+        BluekingCCClient client = new BluekingCCClient(baseUrlEx, bkAppCodeEx, bkAppSecretEx, bkUsernameEx);
         BkBizSetModule biz = findBiz(client, bkBizEx);
         if (Objects.isNull(biz)) {
             logger.log("CMDB Business not found, please check your parameter");
@@ -268,35 +268,6 @@ public class BkCcHostsBuilder extends Builder implements SimpleBuildStep {
         @Override
         public String getDisplayName() {
             return Messages.BkCcHostsBuilder_DescriptorImpl_DisplayName();
-        }
-    }
-
-    public static class EnvInjectAction implements EnvironmentContributingAction {
-
-        private final EnvVars envVars;
-
-        public EnvInjectAction(EnvVars envVars) {
-            this.envVars = envVars;
-        }
-
-        @Override
-        public String getIconFileName() {
-            return null;
-        }
-
-        @Override
-        public String getDisplayName() {
-            return null;
-        }
-
-        @Override
-        public String getUrlName() {
-            return null;
-        }
-
-        @Override
-        public void buildEnvironment(Run<?, ?> run, EnvVars env) {
-            env.overrideAll(envVars);
         }
     }
 }
