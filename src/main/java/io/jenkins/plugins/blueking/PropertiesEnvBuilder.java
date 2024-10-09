@@ -6,7 +6,6 @@ import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.AbstractProject;
 import hudson.model.Descriptor;
-import hudson.model.EnvironmentContributingAction;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.tasks.BuildStepDescriptor;
@@ -75,6 +74,7 @@ public class PropertiesEnvBuilder extends Builder implements SimpleBuildStep {
         return Jenkins.get().getDescriptorByType(PropertiesEnvConfig.PropertiesEnvConfigDescriptor.class);
     }
 
+    @Override
     public void perform(Run<?, ?> run, FilePath workspace, EnvVars env, Launcher launcher, TaskListener listener)
             throws InterruptedException, IOException {
         Logger logger = new Logger("PropertiesEnvBuilder", listener);
@@ -157,35 +157,6 @@ public class PropertiesEnvBuilder extends Builder implements SimpleBuildStep {
         @Override
         public String getDisplayName() {
             return "Get environments from properties file";
-        }
-    }
-
-    public static class EnvInjectAction implements EnvironmentContributingAction {
-
-        private final EnvVars envVars;
-
-        public EnvInjectAction(EnvVars envVars) {
-            this.envVars = envVars;
-        }
-
-        @Override
-        public String getIconFileName() {
-            return null;
-        }
-
-        @Override
-        public String getDisplayName() {
-            return null;
-        }
-
-        @Override
-        public String getUrlName() {
-            return null;
-        }
-
-        @Override
-        public void buildEnvironment(Run<?, ?> run, EnvVars env) {
-            env.overrideAll(envVars);
         }
     }
 }

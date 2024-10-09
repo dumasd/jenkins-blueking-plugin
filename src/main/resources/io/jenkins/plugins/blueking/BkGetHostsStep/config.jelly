@@ -23,6 +23,9 @@
         <f:textbox/>
     </f:entry>
     <f:advanced>
+        <f:entry title="${%runOnAgent}" field="runOnAgent">
+            <f:checkbox default="false"/>
+        </f:entry>
         <f:entry title="${%outerIpVariable}" field="outerIpVariable">
             <f:textbox default="${instance != null ? instance.envVarName : 'BK_OUTER_IPS'}"/>
         </f:entry>
