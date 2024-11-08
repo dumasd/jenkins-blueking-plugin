@@ -6,7 +6,6 @@ import hudson.FilePath;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import io.jenkins.plugins.blueking.utils.Logger;
-
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -16,7 +15,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
-
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang.StringUtils;
@@ -48,8 +46,7 @@ public class ReadPropertiesStep extends Step {
     }
 
     @DataBoundConstructor
-    public ReadPropertiesStep() {
-    }
+    public ReadPropertiesStep() {}
 
     @DataBoundSetter
     public void setFileId(String fileId) {
@@ -114,9 +111,11 @@ public class ReadPropertiesStep extends Step {
                         properties.load(is);
                     }
                 } else if (f.isDirectory()) {
-                    logger.log("warning: FilePath %s is a directory, omitting from properties gathering", f.getRemote());
+                    logger.log(
+                            "warning: FilePath %s is a directory, omitting from properties gathering", f.getRemote());
                 } else if (!f.exists()) {
-                    logger.log("warning: FilePath %s does not exist, omitting from properties gathering", f.getRemote());
+                    logger.log(
+                            "warning: FilePath %s does not exist, omitting from properties gathering", f.getRemote());
                 }
             } else {
                 throw new IllegalArgumentException("FileId and FilePath all blank!!");
@@ -126,5 +125,4 @@ public class ReadPropertiesStep extends Step {
             return result;
         }
     }
-
 }
