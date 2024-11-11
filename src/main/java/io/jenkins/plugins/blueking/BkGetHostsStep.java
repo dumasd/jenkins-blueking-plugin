@@ -16,7 +16,7 @@ import io.jenkins.plugins.blueking.model.req.ListBizHostsRequest;
 import io.jenkins.plugins.blueking.model.req.SearchBusinessRequest;
 import io.jenkins.plugins.blueking.model.req.SearchSetRequest;
 import io.jenkins.plugins.blueking.utils.BluekingException;
-import io.jenkins.plugins.blueking.utils.Logger;
+import io.jenkins.plugins.dumasd.common.Logger;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;

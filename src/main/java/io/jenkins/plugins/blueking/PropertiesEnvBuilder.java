@@ -12,7 +12,7 @@ import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.FormValidation;
 import io.jenkins.plugins.blueking.config.PropertiesEnvConfig;
-import io.jenkins.plugins.blueking.utils.Logger;
+import io.jenkins.plugins.dumasd.common.Logger;
 import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;

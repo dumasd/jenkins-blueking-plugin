@@ -1,4 +1,4 @@
-package io.jenkins.plugins.blueking.utils;
+package io.jenkins.plugins.dumasd.common;
 
 import hudson.model.TaskListener;
 import java.io.PrintStream;

@@ -1,4 +1,4 @@
-package io.jenkins.plugins.blueking.utils;
+package io.jenkins.plugins.dumasd.common;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;

@@ -12,7 +12,7 @@ import io.jenkins.plugins.blueking.model.req.SearchModuleRequest;
 import io.jenkins.plugins.blueking.model.req.SearchSetRequest;
 import io.jenkins.plugins.blueking.model.resp.BaseResponse;
 import io.jenkins.plugins.blueking.utils.BluekingException;
-import io.jenkins.plugins.blueking.utils.HttpClientUtil;
+import io.jenkins.plugins.dumasd.common.HttpClientUtil;
 
 public class BluekingCCClient {
 

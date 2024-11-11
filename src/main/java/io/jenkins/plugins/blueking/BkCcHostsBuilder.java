@@ -20,7 +20,7 @@ import io.jenkins.plugins.blueking.model.dto.PageData;
 import io.jenkins.plugins.blueking.model.req.ListBizHostsRequest;
 import io.jenkins.plugins.blueking.model.req.SearchBusinessRequest;
 import io.jenkins.plugins.blueking.model.req.SearchSetRequest;
-import io.jenkins.plugins.blueking.utils.Logger;
+import io.jenkins.plugins.dumasd.common.Logger;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;

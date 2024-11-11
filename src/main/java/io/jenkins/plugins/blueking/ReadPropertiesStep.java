@@ -5,7 +5,7 @@ import hudson.Extension;
 import hudson.FilePath;
 import hudson.model.Run;
 import hudson.model.TaskListener;
-import io.jenkins.plugins.blueking.utils.Logger;
+import io.jenkins.plugins.dumasd.common.Logger;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
