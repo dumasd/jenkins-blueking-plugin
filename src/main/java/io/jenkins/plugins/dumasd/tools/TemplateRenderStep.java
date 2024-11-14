@@ -1,22 +1,33 @@
 package io.jenkins.plugins.dumasd.tools;
 
+import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONException;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.model.Run;
 import hudson.model.TaskListener;
+import hudson.util.FormValidation;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import net.sf.json.JSONObject;
+import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.plugins.workflow.steps.Step;
 import org.jenkinsci.plugins.workflow.steps.StepContext;
 import org.jenkinsci.plugins.workflow.steps.StepDescriptor;
 import org.jenkinsci.plugins.workflow.steps.StepExecution;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.verb.POST;
 
 @Setter
 @Getter
@@ -29,7 +40,7 @@ public class TemplateRenderStep extends Step implements Serializable {
 
     private String outputFile;
 
-    private Map<String, Serializable> vars;
+    private Map<String, Object> vars;
 
     @DataBoundConstructor
     public TemplateRenderStep(String templateFile, String outputFile) {
@@ -38,8 +49,13 @@ public class TemplateRenderStep extends Step implements Serializable {
     }
 
     @DataBoundSetter
-    public void setVars(Map<String, Serializable> vars) {
+    public void setVars(Map<String, Object> vars) {
         this.vars = vars;
+    }
+
+    @DataBoundSetter
+    public void setVars(String vars) {
+        this.vars = JSON.parseObject(vars);
     }
 
     @Override
@@ -62,6 +78,46 @@ public class TemplateRenderStep extends Step implements Serializable {
         @Override
         public String getFunctionName() {
             return "templateRender";
+        }
+
+        @POST
+        public FormValidation doCheckTemplateFile(@QueryParameter("templateFile") String templateFile) {
+            if (StringUtils.isBlank(templateFile)) {
+                return FormValidation.error("templateFile is required");
+            }
+            return FormValidation.ok();
+        }
+
+        @POST
+        public FormValidation doCheckOutputFile(@QueryParameter("outputFile") String outputFile) {
+            if (StringUtils.isBlank(outputFile)) {
+                return FormValidation.error("outputFile is required");
+            }
+            return FormValidation.ok();
+        }
+
+        @POST
+        public FormValidation doCheckVars(@QueryParameter("vars") String vars) {
+            if (StringUtils.isNotBlank(vars)) {
+                try {
+                    JSON.parse(vars);
+                } catch (JSONException e) {
+                    return FormValidation.error("Illegal json format");
+                }
+            }
+            return FormValidation.ok();
+        }
+
+        @Override
+        public Step newInstance(@Nullable StaplerRequest req, @NonNull JSONObject formData) throws FormException {
+            String templateFile = formData.getString("templateFile");
+            String outputFile = formData.getString("outputFile");
+            Object vars = formData.getOrDefault("vars", null);
+            TemplateRenderStep step = new TemplateRenderStep(templateFile, outputFile);
+            if (Objects.nonNull(vars) && StringUtils.isNotBlank(vars.toString())) {
+                step.setVars(vars.toString());
+            }
+            return step;
         }
     }
 }

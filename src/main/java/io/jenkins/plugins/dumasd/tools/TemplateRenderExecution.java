@@ -15,7 +15,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Map;
@@ -29,10 +28,10 @@ public class TemplateRenderExecution extends SynchronousNonBlockingStepExecution
 
     private final String outputFile;
 
-    private final Map<String, Serializable> vars;
+    private final Map<String, Object> vars;
 
     public TemplateRenderExecution(
-            @NonNull StepContext context, String templateFile, String outputFile, Map<String, Serializable> vars) {
+            @NonNull StepContext context, String templateFile, String outputFile, Map<String, Object> vars) {
         super(context);
         this.templateFile = templateFile;
         this.outputFile = outputFile;
@@ -57,9 +56,9 @@ public class TemplateRenderExecution extends SynchronousNonBlockingStepExecution
 
     private static class RemoteCallable extends MasterToSlaveFileCallable<Boolean> {
         private final String outputFile;
-        private final Map<String, Serializable> vars;
+        private final Map<String, Object> vars;
 
-        private RemoteCallable(String outputFile, Map<String, Serializable> vars) {
+        private RemoteCallable(String outputFile, Map<String, Object> vars) {
             this.outputFile = outputFile;
             this.vars = vars;
         }
