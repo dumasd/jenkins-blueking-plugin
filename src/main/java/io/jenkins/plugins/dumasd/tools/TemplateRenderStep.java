@@ -53,7 +53,6 @@ public class TemplateRenderStep extends Step implements Serializable {
         this.vars = vars;
     }
 
-    @DataBoundSetter
     public void setVars(String vars) {
         this.vars = JSON.parseObject(vars);
     }
