@@ -15,10 +15,8 @@ import hudson.util.FormValidation;
 import io.jenkins.plugins.blueking.client.BluekingCCClient;
 import io.jenkins.plugins.blueking.model.dto.BkBizSetModule;
 import io.jenkins.plugins.blueking.model.dto.BkHost;
-import io.jenkins.plugins.blueking.model.dto.Page;
 import io.jenkins.plugins.blueking.model.dto.PageData;
 import io.jenkins.plugins.blueking.model.req.ListBizHostsRequest;
-import io.jenkins.plugins.blueking.model.req.SearchBusinessRequest;
 import io.jenkins.plugins.blueking.model.req.SearchSetRequest;
 import io.jenkins.plugins.dumasd.common.Logger;
 import java.io.IOException;
@@ -115,7 +113,7 @@ public class BkCcHostsBuilder extends Builder implements SimpleBuildStep {
         logger.log(
                 "Start fetch host. baseUrl:%s, biz:%s, set:%s, modules:%s", baseUrlEx, bkBizEx, bkSetEx, bkModulesEx);
         BluekingCCClient client = new BluekingCCClient(baseUrlEx, bkAppCodeEx, bkAppSecretEx, bkUsernameEx);
-        BkBizSetModule biz = findBiz(client, bkBizEx);
+        BkBizSetModule biz = client.findBiz(bkBizEx);
         if (Objects.isNull(biz)) {
             logger.log("CMDB Business not found, please check your parameter");
             run.setResult(Result.FAILURE);
@@ -172,26 +170,6 @@ public class BkCcHostsBuilder extends Builder implements SimpleBuildStep {
         envVars.put(innerIpVariable, innerIps);
         envVars.put(outerIpVariable, outerIps);
         run.addAction(new EnvInjectAction(envVars));
-    }
-
-    private BkBizSetModule findBiz(BluekingCCClient client, String bizIdOrName) {
-        SearchBusinessRequest searchBusinessRequest = new SearchBusinessRequest();
-        Page page = new Page();
-        page.setLimit(200);
-        searchBusinessRequest.setPage(page);
-        PageData<BkBizSetModule> searchBusinessData = client.searchBusiness(searchBusinessRequest);
-        if (searchBusinessData.getCount() <= 0) {
-            return null;
-        }
-        BkBizSetModule biz = null;
-        for (BkBizSetModule bsm : searchBusinessData.getInfo()) {
-            if (Objects.equals(bsm.getBkBizId().toString(), bizIdOrName)
-                    || Objects.equals(bsm.getBkBizName(), bizIdOrName)) {
-                biz = bsm;
-                break;
-            }
-        }
-        return biz;
     }
 
     @Symbol("bkCC")

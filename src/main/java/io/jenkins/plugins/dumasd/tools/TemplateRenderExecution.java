@@ -24,6 +24,8 @@ import org.jenkinsci.plugins.workflow.steps.SynchronousNonBlockingStepExecution;
 
 public class TemplateRenderExecution extends SynchronousNonBlockingStepExecution<Map<String, String>> {
 
+    private static final long serialVersionUID = 3007320632464334141L;
+
     private final String templateFile;
 
     private final String outputFile;
@@ -55,6 +57,7 @@ public class TemplateRenderExecution extends SynchronousNonBlockingStepExecution
     }
 
     private static class RemoteCallable extends MasterToSlaveFileCallable<Boolean> {
+        private static final long serialVersionUID = 3524691324325868577L;
         private final String outputFile;
         private final Map<String, Object> vars;
 

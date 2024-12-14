@@ -1,5 +1,6 @@
 package io.jenkins.plugins.blueking.model.dto;
 
+import java.io.Serializable;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -11,8 +12,9 @@ import lombok.ToString;
 @Setter
 @Getter
 @ToString
-public class Condition {
+public class Condition implements Serializable {
 
+    private static final long serialVersionUID = 4509601218964404537L;
     private String field;
 
     private String operator;

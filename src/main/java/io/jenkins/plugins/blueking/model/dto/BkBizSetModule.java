@@ -1,6 +1,7 @@
 package io.jenkins.plugins.blueking.model.dto;
 
 import com.alibaba.fastjson2.annotation.JSONField;
+import java.io.Serializable;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -8,7 +9,9 @@ import lombok.ToString;
 @Setter
 @Getter
 @ToString
-public class BkBizSetModule {
+public class BkBizSetModule implements Serializable {
+
+    private static final long serialVersionUID = -6544147055314877349L;
 
     @JSONField(name = "bk_biz_id")
     private Integer bkBizId;

@@ -1,5 +1,7 @@
 package io.jenkins.plugins.dumasd.common;
 
+import io.jenkins.plugins.blueking.utils.BluekingException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -16,8 +18,6 @@ import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.core5.http.HttpHeaders;
 import org.apache.hc.core5.http.NameValuePair;
 import org.apache.hc.core5.http.message.BasicNameValuePair;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author Bruce.Wu
@@ -27,10 +27,6 @@ public final class HttpClientUtil {
 
     private HttpClientUtil() {}
 
-    private static final Logger logger = LoggerFactory.getLogger(HttpClientUtil.class);
-
-    private static final String HTTPS = "https";
-
     /**
      * 根据url构建HttpClient（区分http和https）
      *
@@ -38,13 +34,9 @@ public final class HttpClientUtil {
      * @return CloseableHttpClient实例
      */
     private static CloseableHttpClient buildHttpClient(String url) {
-        try {
-            return HttpClientBuilder.create()
-                    .setRedirectStrategy(DefaultRedirectStrategy.INSTANCE)
-                    .build();
-        } catch (Exception e) {
-            throw new RuntimeException("HttpClient构建失败", e);
-        }
+        return HttpClientBuilder.create()
+                .setRedirectStrategy(DefaultRedirectStrategy.INSTANCE)
+                .build();
     }
 
     /**
@@ -55,25 +47,17 @@ public final class HttpClientUtil {
      * @return 响应结果字符串
      */
     public static String get(String url, HttpClientConfig config) {
-        CloseableHttpClient httpClient = buildHttpClient(url);
-        HttpGet httpGet = new HttpGet(url);
-        if (config == null) {
-            config = new HttpClientConfig();
-        }
-        try {
+        try (CloseableHttpClient httpClient = buildHttpClient(url)) {
+            HttpGet httpGet = new HttpGet(url);
+            if (config == null) {
+                config = new HttpClientConfig();
+            }
             httpGet.setConfig(config.buildRequestConfig());
             config.getHeader().forEach(httpGet::addHeader);
             httpGet.addHeader(HttpHeaders.CONTENT_ENCODING, config.getCharset());
             return httpClient.execute(httpGet, new BasicHttpClientResponseHandler());
-        } catch (Exception e) {
-            logger.error("HttpClient查询失败", e);
-            throw new RuntimeException("HttpClient查询失败", e);
-        } finally {
-            try {
-                httpClient.close();
-            } catch (Exception e) {
-                logger.error("HttpClient关闭连接失败", e);
-            }
+        } catch (IOException e) {
+            throw new BluekingException(e);
         }
     }
 
@@ -86,12 +70,12 @@ public final class HttpClientUtil {
      * @return 响应结果字符串
      */
     public static String post(String url, String json, HttpClientConfig config) {
-        CloseableHttpClient httpClient = buildHttpClient(url);
-        HttpPost httpPost = new HttpPost(url);
-        if (config == null) {
-            config = new HttpClientConfig();
-        }
-        try {
+
+        try (CloseableHttpClient httpClient = buildHttpClient(url)) {
+            HttpPost httpPost = new HttpPost(url);
+            if (config == null) {
+                config = new HttpClientConfig();
+            }
             httpPost.setConfig(config.buildRequestConfig());
             Map<String, String> header = config.getHeader();
             header.keySet().forEach(key -> httpPost.addHeader(key, header.get(key)));
@@ -104,15 +88,8 @@ public final class HttpClientUtil {
             HttpEntity requestEntity = entityBuilder.build();
             httpPost.setEntity(requestEntity);
             return httpClient.execute(httpPost, new BasicHttpClientResponseHandler());
-        } catch (Exception e) {
-            logger.error("HttpClient查询失败", e);
-            throw new RuntimeException("HttpClient查询失败", e);
-        } finally {
-            try {
-                httpClient.close();
-            } catch (Exception e) {
-                logger.error("HttpClient关闭连接失败", e);
-            }
+        } catch (IOException e) {
+            throw new BluekingException(e);
         }
     }
 
@@ -136,12 +113,11 @@ public final class HttpClientUtil {
      * @return 响应结果字符串
      */
     public static String post(String url, Map<String, String> body, HttpClientConfig config) {
-        CloseableHttpClient httpClient = buildHttpClient(url);
-        HttpPost httpPost = new HttpPost(url);
-        if (config == null) {
-            config = new HttpClientConfig();
-        }
-        try {
+        try (CloseableHttpClient httpClient = buildHttpClient(url)) {
+            HttpPost httpPost = new HttpPost(url);
+            if (config == null) {
+                config = new HttpClientConfig();
+            }
             httpPost.setConfig(config.buildRequestConfig());
             config.getHeader().forEach(httpPost::addHeader);
             httpPost.addHeader(HttpHeaders.CONTENT_ENCODING, config.getCharset());
@@ -151,15 +127,8 @@ public final class HttpClientUtil {
                 httpPost.setEntity(new UrlEncodedFormEntity(nvps, config.getCharset()));
             }
             return httpClient.execute(httpPost, new BasicHttpClientResponseHandler());
-        } catch (Exception e) {
-            logger.error("HttpClient查询失败", e);
-            throw new RuntimeException("HttpClient查询失败", e);
-        } finally {
-            try {
-                httpClient.close();
-            } catch (Exception e) {
-                logger.error("HttpClient关闭连接失败", e);
-            }
+        } catch (IOException e) {
+            throw new BluekingException(e);
         }
     }
 }

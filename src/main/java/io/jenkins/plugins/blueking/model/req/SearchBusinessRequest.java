@@ -1,8 +1,8 @@
 package io.jenkins.plugins.blueking.model.req;
 
 import com.alibaba.fastjson2.annotation.JSONField;
-import io.jenkins.plugins.blueking.model.dto.BizPropertyFilter;
 import io.jenkins.plugins.blueking.model.dto.Page;
+import io.jenkins.plugins.blueking.model.dto.PropertyFilter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -20,7 +20,7 @@ public class SearchBusinessRequest extends BaseRequest {
     private Map<String, Object> condition = new HashMap<>();
 
     @JSONField(name = "biz_property_filter")
-    private BizPropertyFilter bizPropertyFilter;
+    private PropertyFilter bizPropertyFilter;
 
     private Page page = new Page();
 
@@ -28,7 +28,7 @@ public class SearchBusinessRequest extends BaseRequest {
         this.fields = new ArrayList<>(Arrays.asList("bk_biz_id", "bk_biz_name"));
     }
 
-    public void setBizPropertyFilter(BizPropertyFilter bizPropertyFilter) {
+    public void setBizPropertyFilter(PropertyFilter bizPropertyFilter) {
         this.bizPropertyFilter = bizPropertyFilter;
     }
 }

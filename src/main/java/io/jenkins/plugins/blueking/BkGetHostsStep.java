@@ -10,10 +10,8 @@ import hudson.remoting.VirtualChannel;
 import io.jenkins.plugins.blueking.client.BluekingCCClient;
 import io.jenkins.plugins.blueking.model.dto.BkBizSetModule;
 import io.jenkins.plugins.blueking.model.dto.BkHost;
-import io.jenkins.plugins.blueking.model.dto.Page;
 import io.jenkins.plugins.blueking.model.dto.PageData;
 import io.jenkins.plugins.blueking.model.req.ListBizHostsRequest;
-import io.jenkins.plugins.blueking.model.req.SearchBusinessRequest;
 import io.jenkins.plugins.blueking.model.req.SearchSetRequest;
 import io.jenkins.plugins.blueking.utils.BluekingException;
 import io.jenkins.plugins.dumasd.common.Logger;
@@ -190,6 +188,7 @@ public class BkGetHostsStep extends Step implements Serializable {
 
     public static class BkGetHostsCallable extends MasterToSlaveFileCallable<Map<String, Object>> {
 
+        private static final long serialVersionUID = 7474375255838540976L;
         /**
          * Blueking API base url
          */
@@ -232,7 +231,7 @@ public class BkGetHostsStep extends Step implements Serializable {
         @Override
         public Map<String, Object> invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
             BluekingCCClient client = new BluekingCCClient(baseUrl, appCode, appSecret, username);
-            BkBizSetModule bkBiz = findBiz(client, biz);
+            BkBizSetModule bkBiz = client.findBiz(biz);
             if (Objects.isNull(bkBiz)) {
                 throw new BluekingException("CMDB Business not found, please check your parameter");
             }
@@ -276,26 +275,6 @@ public class BkGetHostsStep extends Step implements Serializable {
             result.put("innerIps", innerIps);
             result.put("outerIps", outerIps);
             return result;
-        }
-
-        private BkBizSetModule findBiz(BluekingCCClient client, String bizIdOrName) {
-            SearchBusinessRequest searchBusinessRequest = new SearchBusinessRequest();
-            Page page = new Page();
-            page.setLimit(200);
-            searchBusinessRequest.setPage(page);
-            PageData<BkBizSetModule> searchBusinessData = client.searchBusiness(searchBusinessRequest);
-            if (searchBusinessData.getCount() <= 0) {
-                return null;
-            }
-            BkBizSetModule bkBiz = null;
-            for (BkBizSetModule bsm : searchBusinessData.getInfo()) {
-                if (Objects.equals(bsm.getBkBizId().toString(), bizIdOrName)
-                        || Objects.equals(bsm.getBkBizName(), bizIdOrName)) {
-                    bkBiz = bsm;
-                    break;
-                }
-            }
-            return bkBiz;
         }
     }
 

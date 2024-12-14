@@ -1,0 +1,87 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
+         xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+
+    <link rel="stylesheet" href="${rootURL}/plugin/jenkins-blueking-plugin/css/common.css" type="text/css"/>
+    <link href="https://cdn.jsdelivr.net/npm/gridjs/dist/theme/mermaid.min.css" rel="stylesheet" type="text/css"/>
+
+
+    <script src="${rootURL}/plugin/jenkins-blueking-plugin/js/utils.js"/>
+    <script src="${rootURL}/plugin/jenkins-blueking-plugin/js/gridjs.js"/>
+
+    <div style="display: none;">
+        <input id="bkHostsChoiceBaseUrl" type="hidden" disabled="disabled"
+               value="${rootURL}/descriptorByName/io.jenkins.plugins.blueking.BkHostsChoiceParameterDefinition"/>
+        <input id="bkHostsChoiceParams" type="hidden" value="${it.getParams()}" disabled="disabled"/>
+        <input id="selectedBkObjId" type="hidden" value="" disabled="disabled"/>
+        <input id="selectedBkInstId" type="hidden" value="" disabled="disabled"/>
+    </div>
+
+    <div id="bkHostsChoiceParameterApp">
+        <div id="bkChoiceTabs" class="tabBar">
+            <j:forEach items="${it.getTabs()}" var="item" varStatus="status">
+                <j:set var="class" value="tab active"/>
+                <j:if test="${status.index > 0}">
+                    <j:set var="class" value="tab"/>
+                </j:if>
+                <div id="bkChoiceTab_${item.id}" class="${class}" onclick="onChoiceTabClick('${item.id}')">
+                    <a href="#">${item.name}</a>
+                </div>
+            </j:forEach>
+        </div>
+        <div id="bkChoicePans">
+            <j:forEach items="${it.getTabs()}" var="item" varStatus="status">
+                <j:set var="style" value="display: block;"/>
+                <j:if test="${status.index > 0}">
+                    <j:set var="style" value="display: none;"/>
+                </j:if>
+                <div id="bkChoicePan_${item.id}" style="${style}">
+                    <j:if test="${item.id == 'bkIpChoice'}">
+                        <div class="bk-ip-choice">
+                            <div class="big-tree">
+                                <j:forEach var="node" items="${it.getBkInstTopo()}">
+                                    <j:include uri="treeNode.jelly"/>
+                                </j:forEach>
+                            </div>
+
+                            <div>
+                                <!-- 搜索区域 -->
+                                <div>
+                                    <input id="bkHostSearchInput" type="text" placeholder="Please input ip" value=""/>
+                                </div>
+                                <!-- 表格区域 -->
+                                <div id="bkHostsTable">
+
+                                </div>
+
+                            </div>
+
+                        </div>
+                    </j:if>
+
+                    <!--                    <j:if test="${item.id == 'bkTopoChoice'}">-->
+                    <!--                        <span>bkTopoChoice ....</span>-->
+                    <!--                    </j:if>-->
+
+                    <j:if test="${item.id == 'fileChoice'}">
+                        <div>
+                            <input id="fileHostSearchInput" type="text" placeholder="Please input" value=""/>
+                        </div>
+                        <div id="fileHostsTable">
+
+                        </div>
+                    </j:if>
+                </div>
+
+            </j:forEach>
+        </div>
+
+        <!-- Selected host area -->
+        <div name="parameter">
+            <input id="selectedBkHosts" name="selectedBkHosts" type="hidden" value='{}' disabled="disabled"/>
+            <input id="selectedFileHosts" name="selectedFileHosts" type="hidden" value='{}' disabled="disabled"/>
+        </div>
+    </div>
+
+    <script type="text/javascript" src="${rootURL}/plugin/jenkins-blueking-plugin/js/bk-hosts-choice.js"/>
+</j:jelly>

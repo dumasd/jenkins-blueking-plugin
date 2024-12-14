@@ -1,0 +1,74 @@
+/* common css */
+
+.bk-ip-choice {
+    display: flex;
+    flex-direction: row;
+}
+
+/* tree */
+.big-tree {
+    width: 300px;
+    min-width: 300px;
+    max-width: 500px;
+    height: 550px;
+    overflow-y: auto;
+
+    .collapsed > .children {
+        display: none;
+    }
+
+    .tree-node {
+        margin-left: 15px;
+        margin-top: 4px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-size: 14px;
+
+        .toggle-icon {
+            cursor: pointer;
+            margin-right: 5px;
+        }
+
+        .node-folder-icon {
+            width: 24px;
+            height: 36px;
+            line-height: 36px;
+        }
+
+        .tree-node-a {
+
+        }
+
+        .tree-node-a:hover {
+            color: #0d6efd
+        }
+
+        .tree-node-a-active {
+            color: #0d6efd;
+        }
+
+        .label {
+
+        }
+    }
+}
+
+.grid-container {
+    max-height: 500px; /* 表格最大高度 */
+    overflow-y: auto; /* 启用垂直滚动 */
+}
+
+
+.icon-angle-double-down:before {
+    content: "\25BC";
+}
+
+.icon-angle-double-right:before {
+    content: "\25BA";
+}
+
+.icon-angle-double-up:before {
+    content: "\e104";
+}
+
+
