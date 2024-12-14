@@ -16,8 +16,16 @@
     <f:entry title="${%Biz}" field="biz">
         <f:textbox/>
     </f:entry>
-
     <f:entry title="${%ExtraFile}" field="extraFileId">
         <c:select/>
     </f:entry>
+
+    <f:advanced>
+        <f:entry title="${%OuterIpEnvName}" field="outerEnv">
+            <f:textbox default="OUTER_IPS"/>
+        </f:entry>
+        <f:entry title="${%InnerIpEnvName}" field="innerEnv">
+            <f:textbox default="INNER_IPS"/>
+        </f:entry>
+    </f:advanced>
 </j:jelly>

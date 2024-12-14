@@ -78,8 +78,11 @@
 
         <!-- Selected host area -->
         <div name="parameter">
-            <input id="selectedBkHosts" name="selectedBkHosts" type="hidden" value='{}' disabled="disabled"/>
-            <input id="selectedFileHosts" name="selectedFileHosts" type="hidden" value='{}' disabled="disabled"/>
+            <input type="hidden" name="name" value="${h.escape(it.name)}"/>
+            <div name="value" style="display: none;">
+                <input id="selectedBkHosts" name="selectedBkHosts" type="hidden" value='{}' disabled="disabled"/>
+                <input id="selectedFileHosts" name="selectedFileHosts" type="hidden" value='{}' disabled="disabled"/>
+            </div>
         </div>
     </div>
 

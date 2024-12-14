@@ -28,13 +28,16 @@ import io.jenkins.plugins.blueking.model.req.SearchBizInstTopoRequest;
 import io.jenkins.plugins.blueking.utils.BluekingException;
 import io.jenkins.plugins.blueking.utils.Constants;
 import io.jenkins.plugins.blueking.utils.FileHostFilter;
+import io.jenkins.plugins.blueking.utils.Tuple;
 import io.jenkins.plugins.blueking.utils.Utils;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -59,6 +62,7 @@ import org.kohsuke.stapler.bind.JavaScriptMethod;
  * @author Bruce.Wu
  * @date 2024-12-09
  */
+@Log
 @Getter
 @ToString
 public class BkHostsChoiceParameterDefinition extends ParameterDefinition {
@@ -76,7 +80,6 @@ public class BkHostsChoiceParameterDefinition extends ParameterDefinition {
      * bk username
      */
     private String username;
-
     /**
      * 业务名称或集群ID
      */
@@ -85,10 +88,18 @@ public class BkHostsChoiceParameterDefinition extends ParameterDefinition {
      * excel表格
      */
     private String extraFileId;
+    /**
+     * 外网IP列表，逗号分隔
+     */
+    private String outerEnv = "OUTER_IPS";
+    /**
+     * 内网IP列表，逗号分隔
+     */
+    private String innerEnv = "INNER_IPS";
 
     @DataBoundConstructor
     public BkHostsChoiceParameterDefinition(String name) {
-        super(Util.fixNull(Util.fixEmpty(name), "BK_IPS"));
+        super(Util.fixNull(Util.fixEmpty(name), "DEPLOY_IPS"));
     }
 
     @DataBoundSetter
@@ -114,6 +125,16 @@ public class BkHostsChoiceParameterDefinition extends ParameterDefinition {
     @DataBoundSetter
     public void setExtraFileId(String extraFileId) {
         this.extraFileId = extraFileId;
+    }
+
+    @DataBoundSetter
+    public void setOuterEnv(String outerEnv) {
+        this.outerEnv = outerEnv;
+    }
+
+    @DataBoundSetter
+    public void setInnerEnv(String innerEnv) {
+        this.innerEnv = innerEnv;
     }
 
     public List<Map<String, String>> getTabs() {
@@ -175,14 +196,48 @@ public class BkHostsChoiceParameterDefinition extends ParameterDefinition {
         return obj.toString();
     }
 
+    private Tuple<Set<String>, Set<String>> getIps(String json) {
+        Set<String> innerIps = new LinkedHashSet<>();
+        Set<String> outerIps = new LinkedHashSet<>();
+        JSONObject ob = JSONObject.fromObject(json);
+        if (ob.has("data")) {
+            String hostsJson = ob.getString("data");
+            JSONArray arr = JSONArray.fromObject(hostsJson);
+            for (int i = 0; i < arr.size(); i++) {
+                JSONArray host = arr.getJSONArray(i);
+                innerIps.add(host.getString(0));
+                outerIps.add(host.getString(1));
+            }
+        }
+        return new Tuple<>(innerIps, outerIps);
+    }
+
     @Override
     public ParameterValue createValue(StaplerRequest req, JSONObject jo) {
-        return null;
+        String name = jo.getString("name");
+        JSONObject value = jo.getJSONObject("value");
+        String selectedBkHostsJson = value.getString("selectedBkHosts");
+        String selectedFileHostsJson = value.getString("selectedFileHosts");
+
+        Tuple<Set<String>, Set<String>> bkTuple = getIps(selectedBkHostsJson);
+        Tuple<Set<String>, Set<String>> fileTuple = getIps(selectedFileHostsJson);
+
+        Set<String> allInnerIps = new LinkedHashSet<>(bkTuple.getLeft());
+        allInnerIps.addAll(fileTuple.getLeft());
+
+        Set<String> allOuterIps = new LinkedHashSet<>(bkTuple.getRight());
+        allOuterIps.addAll(fileTuple.getRight());
+
+        return new BkHostsChoiceParameterValue(name, outerEnv, innerEnv, allOuterIps, allInnerIps);
     }
 
     @Override
     public ParameterValue createValue(StaplerRequest req) {
-        return null;
+        try {
+            return createValue(req, req.getSubmittedForm());
+        } catch (Exception e) {
+            throw new BluekingException(e);
+        }
     }
 
     @Log
@@ -290,7 +345,7 @@ public class BkHostsChoiceParameterDefinition extends ParameterDefinition {
             FileCredentials fileCredentials = Utils.findCredential(extraFileId, FileCredentials.class);
             CsvReader reader = CsvUtil.getReader();
             CsvData csvData = reader.read(new InputStreamReader(
-                    Objects.requireNonNull(fileCredentials).getContent()));
+                    Objects.requireNonNull(fileCredentials).getContent(), StandardCharsets.UTF_8));
             PageData<FileHost> pageData = new PageData<>();
             if (csvData.getRowCount() < 2) {
                 pageData.setCount(0);
