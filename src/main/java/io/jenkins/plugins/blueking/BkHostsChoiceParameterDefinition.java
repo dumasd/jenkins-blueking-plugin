@@ -257,6 +257,7 @@ public class BkHostsChoiceParameterDefinition extends ParameterDefinition {
 
         public ListBoxModel doFillCredentialsIdItems() {
             ListBoxModel items = new ListBoxModel();
+            items.add("Select a credential", "");
             for (StandardUsernameCredentials c : CredentialsProvider.lookupCredentialsInItemGroup(
                     StandardUsernameCredentials.class, Jenkins.get(), null, Collections.emptyList())) {
                 items.add(c.getId(), c.getId());
@@ -266,6 +267,7 @@ public class BkHostsChoiceParameterDefinition extends ParameterDefinition {
 
         public ListBoxModel doFillExtraFileIdItems() {
             ListBoxModel items = new ListBoxModel();
+            items.add("Select a file", "");
             for (FileCredentials c : CredentialsProvider.lookupCredentialsInItemGroup(
                     FileCredentials.class, Jenkins.get(), null, Collections.emptyList())) {
                 items.add(c.getId(), c.getId());
