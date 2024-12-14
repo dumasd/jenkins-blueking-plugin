@@ -48,6 +48,7 @@
                                 <!-- 搜索区域 -->
                                 <div>
                                     <input id="bkHostSearchInput" type="text" placeholder="Please input ip" value=""/>
+                                    <input id="bkHostClearBtn" type="button" value="Clear"/>
                                 </div>
                                 <!-- 表格区域 -->
                                 <div id="bkHostsTable">
@@ -66,6 +67,7 @@
                     <j:if test="${item.id == 'fileChoice'}">
                         <div>
                             <input id="fileHostSearchInput" type="text" placeholder="Please input" value=""/>
+                            <input id="fileHostClearBtn" type="button" value="Clear"/>
                         </div>
                         <div id="fileHostsTable">
 

@@ -72,6 +72,30 @@ function toggleHostTableAll(cb, table, selectedHostsInput) {
     console.log(selectedHostsInput.value)
 }
 
+function initHostTableCheckBox(state, cb) {
+    const rows = state.data.rows;
+    let allCheckboxChecked = rows.length > 0;
+    for (let i = 0; i < rows.length; i++) {
+        const row = rows[i]
+        if (!row.cells[0].data) {
+            allCheckboxChecked = false;
+            break;
+        }
+    }
+    cb.checked = allCheckboxChecked;
+}
+
+function clearHostTableSelected(table, selectedHostsInput, allCheckBox) {
+    const rows = table.config.store.state.data.rows;
+    for (let i = 0; i < rows.length; i++) {
+        const row = rows[i]
+        row.cells[0].data = false
+        const singleCheckbox = document.getElementById(row.id)
+        singleCheckbox.checked = false
+    }
+    allCheckBox.checked = false
+    selectedHostsInput.value = "{}"
+}
 
 // ====================== Hosts from bk =====================
 function toggleNode(event) {
@@ -242,7 +266,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             },
             pagination: {
-                limit: 100,
+                limit: 200,
                 server: {
                     url: (prev, page, limit) => {
                         return prev + "?limit=" + limit + "&page=" + page;
@@ -253,22 +277,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
         bkHostsTable.config.store.subscribe(function (state) {
             if (state.status === 2) {
-                const bkHostAllCheckbox = document.getElementById("bkHostAllCheckbox")
-                const rows = state.data.rows;
-                let allCheckboxChecked = rows.length > 0;
-                for (let i = 0; i < rows.length; i++) {
-                    const row = rows[i]
-                    if (!row.cells[0].data) {
-                        allCheckboxChecked = false;
-                        break;
-                    }
-                }
-                bkHostAllCheckbox.checked = allCheckboxChecked;
+                const allCheckbox = document.getElementById("bkHostAllCheckbox")
+                initHostTableCheckBox(state, allCheckbox)
             }
         })
 
         const bkHostSearchInput = document.getElementById("bkHostSearchInput");
-        bkHostSearchInput.addEventListener("keydown", function (event) {
+        bkHostSearchInput.addEventListener("keydown", event => {
             if (event.key === "Enter") {
                 console.log("回车键被按下，输入的值：", bkHostSearchInput.value);
                 // 搜索
@@ -277,6 +292,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 event.preventDefault();
             }
         });
+
+        // clear
+        document.getElementById("bkHostClearBtn").addEventListener("click", event => {
+            const allCheckbox = document.getElementById("bkHostAllCheckbox")
+            const selectedFileHostInput = document.getElementById("selectedBkHosts")
+            clearHostTableSelected(bkHostsTable, selectedFileHostInput, allCheckbox)
+        })
     }
 
     const fileHostsTableDiv = document.getElementById("fileHostsTable")
@@ -322,7 +344,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             },
             pagination: {
-                limit: 100,
+                limit: 200,
                 server: {
                     url: (prev, page, limit) => {
                         return prev + "?limit=" + limit + "&page=" + page;
@@ -334,16 +356,7 @@ document.addEventListener('DOMContentLoaded', function () {
         fileHostsTable.config.store.subscribe(function (state) {
             if (state.status === 2) {
                 const bkHostAllCheckbox = document.getElementById("fileHostAllCheckbox")
-                const rows = state.data.rows;
-                let allCheckboxChecked = rows.length > 0;
-                for (let i = 0; i < rows.length; i++) {
-                    const row = rows[i]
-                    if (!row.cells[0].data) {
-                        allCheckboxChecked = false;
-                        break;
-                    }
-                }
-                bkHostAllCheckbox.checked = allCheckboxChecked;
+                initHostTableCheckBox(state, bkHostAllCheckbox)
             }
         })
 
@@ -357,6 +370,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 event.preventDefault();
             }
         });
+
+        document.getElementById("fileHostClearBtn").addEventListener("click", event => {
+            const allCheckbox = document.getElementById("fileHostAllCheckbox")
+            const selectedFileHostInput = document.getElementById("selectedFileHosts")
+            clearHostTableSelected(fileHostsTable, selectedFileHostInput, allCheckbox)
+        })
+
     }
 
 });
