@@ -20,7 +20,7 @@
         <input id="selectedHostsViewModel" type="hidden" value="" disabled="disabled"/>
     </div>
 
-    <div id="bkHostsChoiceParameterApp">
+    <f:entry title="${h.escape(it.name)}" description="${it.formattedDescription}">
         <div id="bkChoiceTabs" class="tabBar">
             <j:forEach items="${it.getTabs()}" var="item" varStatus="status">
                 <j:set var="class" value="tab active"/>
@@ -84,7 +84,7 @@
                 <input id="selectedFileHosts" name="selectedFileHosts" type="hidden" value='{}' disabled="disabled"/>
             </div>
         </div>
-    </div>
+    </f:entry>
 
     <!-- 弹窗 -->
     <div id="selectedViewModal" class="modal-overlay">
