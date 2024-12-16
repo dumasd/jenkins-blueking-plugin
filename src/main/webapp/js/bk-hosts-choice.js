@@ -1,5 +1,6 @@
 let bkHostsTable;
 let fileHostsTable;
+let selectedHostsTable;
 
 function onChoiceTabClick(id) {
     let bkChoicePans = document.getElementById("bkChoicePans");
@@ -22,6 +23,17 @@ function onChoiceTabClick(id) {
     }
 }
 
+function getSelectHostArray(selectedHostsData) {
+    if (selectedHostsData.data) {
+        if (Array.isArray(selectedHostsData.data)) {
+            return selectedHostsData.data
+        } else if (typeof (selectedHostsData.data) === 'string') {
+            return JSON.parse(selectedHostsData.data)
+        }
+    }
+    return []
+}
+
 function toggleHostTableSingle(cb, table, selectedHostsInput) {
     const rows = table.config.store.state.data.rows;
     for (let i = 0; i < rows.length; i++) {
@@ -37,10 +49,8 @@ function toggleHostTableSingle(cb, table, selectedHostsInput) {
 function toggleHostTableAll(cb, table, selectedHostsInput) {
     const rows = table.config.store.state.data.rows;
     let selectedHostsData = JSON.parse(selectedHostsInput.value);
-    let selectedHosts = []
-    if (selectedHostsData.data) {
-        selectedHosts = JSON.parse(selectedHostsData.data)
-    }
+    let selectedHosts = getSelectHostArray(selectedHostsData);
+
     const hostIds = []
     for (let i = 0; i < rows.length; i++) {
         hostIds.push(rows[i].cells[1].data)
@@ -97,16 +107,20 @@ function clearHostTableSelected(table, selectedHostsInput, allCheckBox) {
     selectedHostsInput.value = "{}"
 }
 
+
 // ====================== Hosts from bk =====================
 function toggleNode(event) {
-    const node = event.currentTarget.closest('.tree-node');
-    if (node.classList.toggle('collapsed')) {
-        event.currentTarget.classList.remove('icon-angle-double-down')
-        event.currentTarget.classList.add('icon-angle-double-right')
-    } else {
-        event.currentTarget.classList.remove('icon-angle-double-right')
-        event.currentTarget.classList.add('icon-angle-double-down')
+    const collapsed = event.currentTarget.classList.toggle('collapsed');
+    const parentLi = event.currentTarget.parentNode;
+    const last = parentLi.lastChild;
+    if (last.tagName.toLowerCase() === 'ul') {
+        if (collapsed) {
+            last.style.display = 'block';
+        } else {
+            last.style.display = 'none';
+        }
     }
+    event.stopPropagation();
 }
 
 function onClickNode(event) {
@@ -122,35 +136,32 @@ function onClickNode(event) {
 
     selectedBkObjIdInput.value = bkObjId
     selectedBkInstIdInput.value = bkInstId
-    const treeNodes = document.querySelectorAll(".tree-node-a")
+    const treeNodes = document.querySelectorAll(".tree li a.active")
     treeNodes.forEach((e, idx) => {
-        if (event.currentTarget === e) {
-            e.classList.add('tree-node-a-active')
-        } else {
-            e.classList.remove('tree-node-a-active')
-        }
+        e.classList.remove('active')
     })
-    bkHostsTable.updateConfig({}).forceRender();
+    event.currentTarget.classList.add('active')
+    bkHostsTable.forceRender()
 }
 
 const fetchBkHosts = (opts) => {
     // console.log(opts)
-    const bkHostSearchInput = document.getElementById("bkHostSearchInput")
+    const choiceParams = document.getElementById("bkHostsChoiceParams").value
+    const searchInput = document.getElementById("bkHostSearchInput")
     const selectedBkObjIdInput = document.getElementById("selectedBkObjId")
     const selectedBkInstIdInput = document.getElementById("selectedBkInstId")
     const selectedHostsInput = document.getElementById("selectedBkHosts")
-    const bkHostsChoiceParams = document.getElementById("bkHostsChoiceParams").value
     return fetch(opts.url, {
         method: "post",
         headers: crumb.wrap({
             "Content-Type": "application/x-www-form-urlencoded"
         }),
         body: objectToUrlFormEncoded({
-            bkHostsChoiceParams: bkHostsChoiceParams,
+            bkHostsChoiceParams: choiceParams,
             selectedHosts: selectedHostsInput.value,
             bkObjId: selectedBkObjIdInput.value,
             bkInstId: selectedBkInstIdInput.value,
-            keyword: bkHostSearchInput.value
+            keyword: searchInput.value
         })
     }).then(response => response.json())
         .then(resp => {
@@ -161,18 +172,14 @@ const fetchBkHosts = (opts) => {
 
 function onHostSelection(row, selectedHostsInput) {
     let selectedHostsData = JSON.parse(selectedHostsInput.value);
-    let selectedHosts = []
+    let selectedHosts = getSelectHostArray(selectedHostsData);
     const hostId = row.cells[1].data
     const innerIp = row.cells[2].data
     const outerIp = row.cells[3].data
     const name = row.cells[4].data
-    if (selectedHostsData.data) {
-        selectedHosts = JSON.parse(selectedHostsData.data)
-        selectedHosts = selectedHosts.filter(el => {
-            return !(el[3] === outerIp || el[0] === innerIp);
-        })
-    }
-
+    selectedHosts = selectedHosts.filter(el => {
+        return !(el[3] === outerIp || el[0] === innerIp);
+    })
     if (row.cells[0].data) {
         selectedHosts.push([
             innerIp, // inner
@@ -198,8 +205,8 @@ function toggleBkHostSingle(cb) {
 // ====================== Hosts from file =====================
 
 function fetchFileHosts(opts) {
-    const fileHostSearchInput = document.getElementById("fileHostSearchInput")
-    const bkHostsChoiceParams = document.getElementById("bkHostsChoiceParams").value
+    const choiceParams = document.getElementById("bkHostsChoiceParams").value
+    const searchInput = document.getElementById("fileHostSearchInput")
     const selectedHostsInput = document.getElementById("selectedFileHosts")
     return fetch(opts.url, {
         method: "post",
@@ -207,9 +214,9 @@ function fetchFileHosts(opts) {
             "Content-Type": "application/x-www-form-urlencoded"
         }),
         body: objectToUrlFormEncoded({
-            bkHostsChoiceParams: bkHostsChoiceParams,
+            bkHostsChoiceParams: choiceParams,
             selectedHosts: selectedHostsInput.value,
-            keyword: fileHostSearchInput.value
+            keyword: searchInput.value
         })
     }).then(response => response.json())
         .then(resp => {
@@ -225,8 +232,90 @@ function toggleFileHostSingle(cb) {
     toggleHostTableSingle(cb, fileHostsTable, document.getElementById("selectedFileHosts"));
 }
 
+
+// ===================== Selected hosts view ======================
+function fetchSelectedHosts(opts) {
+    const model = document.getElementById("selectedHostsViewModel").value;
+    let selectedHosts = '{}';
+    if (model === 'file') {
+        selectedHosts = document.getElementById("selectedFileHosts").value
+    } else {
+        selectedHosts = document.getElementById("selectedBkHosts").value
+    }
+    const searchInput = document.getElementById("selectedHostSearchInput");
+    return fetch(opts.url, {
+        method: "post",
+        headers: crumb.wrap({
+            "Content-Type": "application/x-www-form-urlencoded"
+        }),
+        body: objectToUrlFormEncoded({
+            selectedHosts: selectedHosts,
+            keyword: searchInput.value
+        })
+    }).then(response => response.json())
+        .then(resp => {
+            return {data: resp.info, total: resp.count};
+        });
+}
+
+function toggleSelectedHostAll(cb) {
+    const rows = selectedHostsTable.config.store.state.data.rows;
+    for (let i = 0; i < rows.length; i++) {
+        const row = rows[i]
+        row.cells[0].data = cb.checked
+        const singleInput = document.getElementById(row.id)
+        singleInput.checked = cb.checked
+    }
+}
+
+function toggleSelectedHostSingle(cb) {
+    const rows = selectedHostsTable.config.store.state.data.rows;
+    for (let i = 0; i < rows.length; i++) {
+        const row = rows[i]
+        if (row.id === cb.id) {
+            row.cells[0].data = cb.checked
+            break
+        }
+    }
+}
+
+
+function deleteSelectedHosts() {
+    const rows = selectedHostsTable.config.store.state.data.rows;
+    const model = document.getElementById("selectedHostsViewModel").value;
+    let selectedHostsInput;
+    if (model === 'file') {
+        selectedHostsInput = document.getElementById("selectedFileHosts")
+    } else {
+        selectedHostsInput = document.getElementById("selectedBkHosts")
+    }
+    let selectedHostsData = JSON.parse(selectedHostsInput.value);
+    let selectedHosts = getSelectHostArray(selectedHostsData);
+    const deleteHostIds = []
+    for (let i = 0; i < rows.length; i++) {
+        if (rows[i].cells[0].data) {
+            deleteHostIds.push(rows[i].cells[1].data)
+        }
+    }
+
+    if (deleteHostIds.length > 0) {
+        selectedHosts = selectedHosts.filter(el => deleteHostIds.indexOf(el[3]) < 0)
+        selectedHostsData.data = selectedHosts
+        selectedHostsInput.value = JSON.stringify(selectedHostsData)
+        console.log(selectedHostsInput.value)
+        selectedHostsTable.forceRender();
+        if (model === 'file') {
+            fileHostsTable.forceRender();
+        } else {
+            bkHostsTable.forceRender();
+        }
+    }
+}
+
+
 document.addEventListener('DOMContentLoaded', function () {
     const BASE_URL = document.getElementById("bkHostsChoiceBaseUrl").value;
+
     const bkHostsTableDiv = document.getElementById("bkHostsTable")
     if (bkHostsTableDiv) {
         bkHostsTable = new gridjs.Grid({
@@ -234,23 +323,27 @@ document.addEventListener('DOMContentLoaded', function () {
                 {
                     id: 'selected',
                     name: gridjs.html('<input id="bkHostAllCheckbox" type="checkbox" onclick="toggleBkHostAll(this);"/>'),
+                    width: '65px',
                     data: (row) => row.selected,
                     formatter: (cell, row, column) => {
-                        var checked = cell ? "checked" : ""
+                        let checked = cell ? "checked" : ""
                         return gridjs.html('<input id="' + row.id + '" type="checkbox" onclick="toggleBkHostSingle(this);" ' + checked + ' />')
                     }
                 },
                 {
                     id: 'bk_host_id',
-                    name: 'ID'
+                    name: 'ID',
+                    width: '80px'
                 },
                 {
                     id: 'bk_host_innerip',
-                    name: 'Inner IP'
+                    name: 'Inner IP',
+                    width: '135px'
                 },
                 {
                     id: 'bk_host_outerip',
-                    name: 'Outer IP'
+                    name: 'Outer IP',
+                    width: '135px'
                 },
                 {
                     id: 'host_name',
@@ -258,7 +351,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             ],
             fixedHeader: true,
-            height: '500px',
+            height: '520px',
             server: {
                 url: BASE_URL + "/searchBkHosts",
                 data: (opts) => {
@@ -285,7 +378,6 @@ document.addEventListener('DOMContentLoaded', function () {
         const bkHostSearchInput = document.getElementById("bkHostSearchInput");
         bkHostSearchInput.addEventListener("keydown", event => {
             if (event.key === "Enter") {
-                console.log("回车键被按下，输入的值：", bkHostSearchInput.value);
                 // 搜索
                 bkHostsTable.forceRender();
                 // 可选：阻止默认行为（如在某些表单中，回车会触发提交）
@@ -299,6 +391,12 @@ document.addEventListener('DOMContentLoaded', function () {
             const selectedFileHostInput = document.getElementById("selectedBkHosts")
             clearHostTableSelected(bkHostsTable, selectedFileHostInput, allCheckbox)
         })
+
+        document.getElementById("bkHostViewBtn").addEventListener("click", event => {
+            document.getElementById("selectedViewModal").classList.add("active")
+            document.getElementById("selectedHostsViewModel").value = 'bkIp';
+            selectedHostsTable.forceRender()
+        })
     }
 
     const fileHostsTableDiv = document.getElementById("fileHostsTable")
@@ -308,23 +406,27 @@ document.addEventListener('DOMContentLoaded', function () {
                 {
                     id: 'selected',
                     name: gridjs.html('<input id="fileHostAllCheckbox" type="checkbox" onclick="toggleFileHostAll(this);"/>'),
+                    width: '65px',
                     data: (row) => row.selected,
                     formatter: (cell, row, column) => {
-                        var checked = cell ? "checked" : ""
+                        let checked = cell ? "checked" : ""
                         return gridjs.html('<input id="' + row.id + '" type="checkbox" onclick="toggleFileHostSingle(this);" ' + checked + ' />')
                     }
                 },
                 {
                     id: 'host_id',
-                    name: 'ID'
+                    name: 'ID',
+                    width: '80px'
                 },
                 {
                     id: 'host_innerip',
-                    name: 'Inner IP'
+                    name: 'Inner IP',
+                    width: '135px'
                 },
                 {
                     id: 'host_outerip',
-                    name: 'Outer IP'
+                    name: 'Outer IP',
+                    width: '135px'
                 },
                 {
                     id: 'host_name',
@@ -336,7 +438,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             ],
             fixedHeader: true,
-            height: '500px',
+            height: '510px',
             server: {
                 url: BASE_URL + "/searchFileHosts",
                 data: (opts) => {
@@ -363,7 +465,6 @@ document.addEventListener('DOMContentLoaded', function () {
         const fileHostSearchInput = document.getElementById("fileHostSearchInput");
         fileHostSearchInput.addEventListener("keydown", function (event) {
             if (event.key === "Enter") {
-                console.log("回车键被按下，输入的值：", fileHostSearchInput.value);
                 // 搜索
                 fileHostsTable.forceRender();
                 // 可选：阻止默认行为（如在某些表单中，回车会触发提交）
@@ -377,6 +478,79 @@ document.addEventListener('DOMContentLoaded', function () {
             clearHostTableSelected(fileHostsTable, selectedFileHostInput, allCheckbox)
         })
 
+        document.getElementById("fileHostViewBtn").addEventListener("click", event => {
+            document.getElementById("selectedViewModal").classList.add("active")
+            document.getElementById("selectedHostsViewModel").value = 'file';
+            selectedHostsTable.forceRender()
+        })
     }
+
+    selectedHostsTable = new gridjs.Grid({
+        columns: [
+            {
+                id: 'selected',
+                name: gridjs.html('<input id="fileHostAllCheckbox" type="checkbox" onclick="toggleSelectedHostAll(this);"/>'),
+                width: '65px',
+                formatter: (cell, row, column) => {
+                    return gridjs.html('<input id="' + row.id + '" type="checkbox" onclick="toggleSelectedHostSingle(this);"/>')
+                }
+            },
+            {
+                id: 'id',
+                name: 'ID',
+                width: '80px'
+            },
+            {
+                id: 'innerip',
+                name: 'Inner IP',
+                width: '135px'
+            },
+            {
+                id: 'outerip',
+                name: 'Outer IP',
+                width: '135px'
+            },
+            {
+                id: 'name',
+                name: 'Host Name'
+            }
+        ],
+        fixedHeader: true,
+        height: '500px',
+        server: {
+            url: BASE_URL + "/getSelectedHosts",
+            data: (opts) => {
+                return fetchSelectedHosts(opts);
+            }
+        },
+        pagination: {
+            limit: 200,
+            server: {
+                url: (prev, page, limit) => {
+                    return prev + "?limit=" + limit + "&page=" + page;
+                }
+            }
+        }
+    }).render(document.getElementById("selectedHostsTable"));
+
+    document.getElementById("deleteSelectedHost").addEventListener("click", () => {
+        deleteSelectedHosts()
+    })
+
+    const selectedHostSearchInput = document.getElementById("selectedHostSearchInput");
+    selectedHostSearchInput.addEventListener("keydown", event => {
+        if (event.key === "Enter") {
+            // 搜索
+            selectedHostsTable.forceRender();
+            // 可选：阻止默认行为（如在某些表单中，回车会触发提交）
+            event.preventDefault();
+        }
+    });
+
+    document.getElementById("selectedViewModalClose").addEventListener("click", () => {
+        const searchInput = document.getElementById("selectedHostSearchInput");
+        searchInput.value = ""
+        document.getElementById("selectedViewModal").classList.remove("active")
+    })
 
 });

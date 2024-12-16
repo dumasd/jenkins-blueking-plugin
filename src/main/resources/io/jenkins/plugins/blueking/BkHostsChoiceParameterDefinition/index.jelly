@@ -3,6 +3,8 @@
          xmlns:t="/lib/hudson" xmlns:f="/lib/form">
 
     <link rel="stylesheet" href="${rootURL}/plugin/jenkins-blueking-plugin/css/common.css" type="text/css"/>
+    <link rel="stylesheet" href="${rootURL}/plugin/jenkins-blueking-plugin/css/tree.css" type="text/css"/>
+    <link rel="stylesheet" href="${rootURL}/plugin/jenkins-blueking-plugin/css/pop.css" type="text/css"/>
     <link href="https://cdn.jsdelivr.net/npm/gridjs/dist/theme/mermaid.min.css" rel="stylesheet" type="text/css"/>
 
 
@@ -15,6 +17,7 @@
         <input id="bkHostsChoiceParams" type="hidden" value="${it.getParams()}" disabled="disabled"/>
         <input id="selectedBkObjId" type="hidden" value="" disabled="disabled"/>
         <input id="selectedBkInstId" type="hidden" value="" disabled="disabled"/>
+        <input id="selectedHostsViewModel" type="hidden" value="" disabled="disabled"/>
     </div>
 
     <div id="bkHostsChoiceParameterApp">
@@ -38,43 +41,38 @@
                 <div id="bkChoicePan_${item.id}" style="${style}">
                     <j:if test="${item.id == 'bkIpChoice'}">
                         <div class="bk-ip-choice">
-                            <div class="big-tree">
+                            <ul class="tree">
                                 <j:forEach var="node" items="${it.getBkInstTopo()}">
-                                    <j:include uri="treeNode.jelly"/>
+                                    <j:include uri="tree.jelly"/>
                                 </j:forEach>
-                            </div>
+                            </ul>
 
                             <div>
                                 <!-- 搜索区域 -->
-                                <div>
-                                    <input id="bkHostSearchInput" type="text" placeholder="Please input ip" value=""/>
-                                    <input id="bkHostClearBtn" type="button" value="Clear"/>
+                                <div style="display: flex; margin-bottom: 5px;">
+                                    <input style="width: 350px;" id="bkHostSearchInput" type="text"
+                                           placeholder="Please input" value=""/>
+                                    <input id="bkHostViewBtn" type="button" value="View Selected"/>
+                                    <input id="bkHostClearBtn" type="button" value="Clear Selected"/>
                                 </div>
                                 <!-- 表格区域 -->
                                 <div id="bkHostsTable">
-
                                 </div>
-
                             </div>
-
                         </div>
                     </j:if>
 
-                    <!--                    <j:if test="${item.id == 'bkTopoChoice'}">-->
-                    <!--                        <span>bkTopoChoice ....</span>-->
-                    <!--                    </j:if>-->
-
                     <j:if test="${item.id == 'fileChoice'}">
-                        <div>
-                            <input id="fileHostSearchInput" type="text" placeholder="Please input" value=""/>
-                            <input id="fileHostClearBtn" type="button" value="Clear"/>
+                        <div style="display: flex; margin-bottom: 5px;">
+                            <input style="width: 350px;" id="fileHostSearchInput" type="text" placeholder="Please input"
+                                   value=""/>
+                            <input id="fileHostViewBtn" type="button" value="View Selected"/>
+                            <input id="fileHostClearBtn" type="button" value="Clear Selected"/>
                         </div>
                         <div id="fileHostsTable">
-
                         </div>
                     </j:if>
                 </div>
-
             </j:forEach>
         </div>
 
@@ -87,6 +85,23 @@
             </div>
         </div>
     </div>
+
+    <!-- 弹窗 -->
+    <div id="selectedViewModal" class="modal-overlay">
+        <div class="modal">
+            <button type="button" class="modal-close" id="selectedViewModalClose">x</button>
+            <div class="modal-title">Selected Hosts</div>
+            <div class="modal-content">
+                <input style="width: 300px;" id="selectedHostSearchInput" type="text" placeholder="Please input"
+                       value=""/>
+                <input id="deleteSelectedHost" type="button" value="Delete"/>
+                <div id="selectedHostsTable">
+
+                </div>
+            </div>
+        </div>
+    </div>
+
 
     <script type="text/javascript" src="${rootURL}/plugin/jenkins-blueking-plugin/js/bk-hosts-choice.js"/>
 </j:jelly>

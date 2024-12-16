@@ -23,11 +23,13 @@ import io.jenkins.plugins.blueking.model.dto.BkInstObj;
 import io.jenkins.plugins.blueking.model.dto.FileHost;
 import io.jenkins.plugins.blueking.model.dto.PageData;
 import io.jenkins.plugins.blueking.model.dto.PropertyFilter;
+import io.jenkins.plugins.blueking.model.dto.SelectedHost;
 import io.jenkins.plugins.blueking.model.req.ListBizHostsRequest;
 import io.jenkins.plugins.blueking.model.req.SearchBizInstTopoRequest;
 import io.jenkins.plugins.blueking.utils.BluekingException;
 import io.jenkins.plugins.blueking.utils.Constants;
 import io.jenkins.plugins.blueking.utils.FileHostFilter;
+import io.jenkins.plugins.blueking.utils.SelectedHostFilter;
 import io.jenkins.plugins.blueking.utils.Tuple;
 import io.jenkins.plugins.blueking.utils.Utils;
 import java.io.IOException;
@@ -91,15 +93,17 @@ public class BkHostsChoiceParameterDefinition extends ParameterDefinition {
     /**
      * 外网IP列表，逗号分隔
      */
-    private String outerEnv = "OUTER_IPS";
+    private String outerEnv;
     /**
      * 内网IP列表，逗号分隔
      */
-    private String innerEnv = "INNER_IPS";
+    private String innerEnv;
 
     @DataBoundConstructor
-    public BkHostsChoiceParameterDefinition(String name) {
+    public BkHostsChoiceParameterDefinition(String name, String outerEnv, String innerEnv) {
         super(Util.fixNull(Util.fixEmpty(name), "DEPLOY_IPS"));
+        this.outerEnv = Util.fixNull(Util.fixEmpty(outerEnv), "OUTER_IPS");
+        this.innerEnv = Util.fixNull(Util.fixEmpty(innerEnv), "INNER_IPS");
     }
 
     @DataBoundSetter
@@ -172,8 +176,7 @@ public class BkHostsChoiceParameterDefinition extends ParameterDefinition {
         SearchBizInstTopoRequest request = new SearchBizInstTopoRequest();
         request.setLevel(-1);
         request.setBkBizId(bkBiz.getBkBizId());
-        List<BkInstObj> topo = client.searchBizInstTopo(request);
-        return topo;
+        return client.searchBizInstTopo(request);
     }
 
     public String getParams() {
@@ -196,7 +199,7 @@ public class BkHostsChoiceParameterDefinition extends ParameterDefinition {
         return obj.toString();
     }
 
-    private Tuple<Set<String>, Set<String>> getIps(String json) {
+    private Tuple<Set<String>, Set<String>> getIps(Object json) {
         Set<String> innerIps = new LinkedHashSet<>();
         Set<String> outerIps = new LinkedHashSet<>();
         JSONObject ob = JSONObject.fromObject(json);
@@ -216,8 +219,8 @@ public class BkHostsChoiceParameterDefinition extends ParameterDefinition {
     public ParameterValue createValue(StaplerRequest req, JSONObject jo) {
         String name = jo.getString("name");
         JSONObject value = jo.getJSONObject("value");
-        String selectedBkHostsJson = value.getString("selectedBkHosts");
-        String selectedFileHostsJson = value.getString("selectedFileHosts");
+        Object selectedBkHostsJson = value.get("selectedBkHosts");
+        Object selectedFileHostsJson = value.get("selectedFileHosts");
 
         Tuple<Set<String>, Set<String>> bkTuple = getIps(selectedBkHostsJson);
         Tuple<Set<String>, Set<String>> fileTuple = getIps(selectedFileHostsJson);
@@ -304,11 +307,14 @@ public class BkHostsChoiceParameterDefinition extends ParameterDefinition {
             listBizHostsRequest.setBkBizId(Integer.parseInt(bizId));
 
             if (Utils.isNotEmpty(keyword)) {
-                PropertyFilter fieldInnerIp = PropertyFilter.createField("bk_host_innerip", "equal", keyword);
-                PropertyFilter fieldOuterIp = PropertyFilter.createField("bk_host_outerip", "equal", keyword);
+                String[] parts = keyword.split("[,\\s]+");
+                PropertyFilter fieldInnerIp = PropertyFilter.createField("bk_host_innerip", Constants.IN, parts);
+                PropertyFilter fieldOuterIp = PropertyFilter.createField("bk_host_outerip", Constants.IN, parts);
+                PropertyFilter fieldHomeName = PropertyFilter.createField("host_name", Constants.IN, parts);
                 List<PropertyFilter> rules = new ArrayList<>(2);
                 rules.add(fieldInnerIp);
                 rules.add(fieldOuterIp);
+                rules.add(fieldHomeName);
                 PropertyFilter hostPropertyFilter = PropertyFilter.createCondition(Constants.OR, rules);
                 listBizHostsRequest.setHostPropertyFilter(hostPropertyFilter);
             }
@@ -389,10 +395,52 @@ public class BkHostsChoiceParameterDefinition extends ParameterDefinition {
                     int endIdx = Math.min(fileHosts.size(), (pageNum + 1) * limitNum);
                     pageData.setInfo(fileHosts.subList(pageNum * limitNum, endIdx));
                 }
-                pageData.setInfo(fileHosts);
             }
             Set<String> selectedHostIds = getSelectedHostIds(selectedHosts);
             pageData.getInfo().forEach(e -> e.setSelected(selectedHostIds.contains(e.getHostId())));
+            return pageData;
+        }
+
+        @JavaScriptMethod(name = "getSelectedHosts")
+        public PageData<SelectedHost> doGetSelectedHosts(
+                @QueryParameter("selectedHosts") String selectedHosts,
+                @QueryParameter("keyword") String keyword,
+                @QueryParameter("page") String page,
+                @QueryParameter("limit") String limit) {
+
+            PageData<SelectedHost> pageData = new PageData<>();
+
+            List<SelectedHost> result = new ArrayList<>();
+            SelectedHostFilter filter = new SelectedHostFilter(keyword);
+            JSONObject selectedHostsObj = JSONObject.fromObject(selectedHosts);
+            if (selectedHostsObj.has("data")) {
+                JSONArray arr = JSONArray.fromObject(selectedHostsObj.get("data"));
+                for (int i = 0; i < arr.size(); i++) {
+                    String innerIp = arr.getJSONArray(i).getString(0);
+                    String outerIp = arr.getJSONArray(i).getString(1);
+                    String name = arr.getJSONArray(i).getString(2);
+                    String id = arr.getJSONArray(i).getString(3);
+                    SelectedHost e = new SelectedHost(id, innerIp, outerIp, name);
+                    if (filter.test(e)) {
+                        result.add(e);
+                    }
+                }
+            }
+
+            if (result.isEmpty()) {
+                pageData.setCount(0);
+                pageData.setInfo(Collections.emptyList());
+            } else {
+                int pageNum = NumberUtil.parseInt(page);
+                int limitNum = NumberUtil.parseInt(limit);
+                if (pageNum * limitNum >= result.size()) {
+                    pageData.setInfo(Collections.emptyList());
+                } else {
+                    int endIdx = Math.min(result.size(), (pageNum + 1) * limitNum);
+                    pageData.setInfo(result.subList(pageNum * limitNum, endIdx));
+                }
+                pageData.setCount(result.size());
+            }
             return pageData;
         }
 
@@ -400,8 +448,7 @@ public class BkHostsChoiceParameterDefinition extends ParameterDefinition {
             Set<String> selectedHostIds = new HashSet<>();
             JSONObject selectedHostsObj = JSONObject.fromObject(selectedHosts);
             if (selectedHostsObj.has("data")) {
-                String hostsJson = selectedHostsObj.getString("data");
-                JSONArray arr = JSONArray.fromObject(hostsJson);
+                JSONArray arr = JSONArray.fromObject(selectedHostsObj.get("data"));
                 for (int i = 0; i < arr.size(); i++) {
                     selectedHostIds.add(arr.getJSONArray(i).getString(3));
                 }

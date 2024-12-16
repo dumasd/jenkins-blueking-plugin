@@ -1,0 +1,26 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
+         xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+
+    <li>
+        <j:if test="${node.child != null and node.child.size() > 0}">
+            <span class="arrow" onclick="toggleNode(event)">▶</span>
+        </j:if>
+        <a onclick="onClickNode(event)">
+            <input style="display: none;" type="hidden" disabled="disabled" value="${node.bkObjId}"/>
+            <input style="display: none;" type="hidden" disabled="disabled" value="${node.bkInstId}"/>
+            <span>${node.bkObjName}:</span>
+            <span style="margin-left: 3px;">${node.bkInstName}</span>
+        </a>
+
+        <j:if test="${node.child != null}">
+            <ul>
+                <j:forEach var="child" items="${node.child}">
+                    <j:set var="node" value="${child}"/>
+                    <j:include uri="tree.jelly">
+                    </j:include>
+                </j:forEach>
+            </ul>
+        </j:if>
+    </li>
+</j:jelly>
