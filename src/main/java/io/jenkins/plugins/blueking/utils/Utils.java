@@ -2,6 +2,7 @@ package io.jenkins.plugins.blueking.utils;
 
 import com.cloudbees.plugins.credentials.CredentialsProvider;
 import com.cloudbees.plugins.credentials.common.StandardCredentials;
+import hudson.model.ItemGroup;
 import java.util.Collections;
 import java.util.Objects;
 import jenkins.model.Jenkins;
@@ -23,13 +24,16 @@ public final class Utils {
     }
 
     public static <T extends StandardCredentials> T findCredential(String credentialsId, Class<T> clazz) {
-        StandardCredentials credentials = null;
+        return findCredential(credentialsId, null, clazz);
+    }
+
+    public static <T extends StandardCredentials> T findCredential(
+            String credentialsId, ItemGroup<?> itemGroup, Class<T> clazz) {
         if (Utils.isNullOrEmpty(credentialsId)) {
             return null;
         }
-
-        for (T c :
-                CredentialsProvider.lookupCredentialsInItemGroup(clazz, Jenkins.get(), null, Collections.emptyList())) {
+        for (T c : CredentialsProvider.lookupCredentialsInItemGroup(
+                clazz, Objects.requireNonNullElse(itemGroup, Jenkins.get()), null, Collections.emptyList())) {
             if (Objects.equals(c.getId(), credentialsId)) {
                 return c;
             }
